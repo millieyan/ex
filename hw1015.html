@@ -58,11 +58,6 @@ class Ball {
     this.pos.add(this.vel.clone().multiplyScalar(dt))
 
     this.collidingPlanes(planes)
-    if (this.pos.z > 100 - this.radius) {
-      const CR = 0.9
-      this.pos.z = 100 - this.radius
-      this.vel.z = -CR * this.vel.z;
-    }
     this.mesh.position.copy(this.pos)
     this.light.position.copy(this.pos)
     this.light.position.y += 20
