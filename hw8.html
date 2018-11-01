@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+	<head>
+	<style>
+	#title {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    color: #ffff00
+}
+
+body {
+    overflow: hidden
+}
+	</style>
+	</head>
+	<body>
+	<div id="title">Hw 8 Demo</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+<script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+	<script>
+	var renderer, scene, camera, controls, keyboard = new KeyboardState();
+var met, boxGeometry, cylinderGeometry, cylinderGeometry2, cylinderGeometry3, clock;
+var base, turret, turn, cannon,muzzle;
+var width, heightvar, grid, axes;
+var shell=[];
+
+var pos = new THREE.Vector3();
+var speed = 0.0;
+
+var baseAngle = 0.0, turretAngle = 0.0, turnAngle = 0.0;
+
+(function() {
+    Math.clamp = function(val, min, max) {
+        return Math.min(Math.max(val, min), max);
+    }
+})();
+class Shell{
+	constructor(pos,vel){
+	this.speed=25.0;
+  this.V0=vel.clone().normalize().multiplyScalar(this.speed);
+  console.log(this.V0);
+  this.Vg=new THREE.Vector3(0,this.V0.y,0);
+  this.pos=pos.clone();
+  this.body=new THREE.Mesh(new THREE.SphereGeometry(1.5,32,32),new THREE.MeshNormalMaterial());
+  this.body.position.copy(pos);
+  scene.add(this.body);
+}
+update(dt) {
+	this.Vg.sub(new THREE.Vector3(0,9.8,0).multiplyScalar(dt));
+  var vel=this.V0.clone().add(this.Vg);
+  this.pos.add(vel.clone().multiplyScalar(dt));
+  this.body.position.copy(this.pos);
+}
+}
+init();
+animate();
+
+function init() {
+
+  renderer = new THREE.WebGLRenderer();
+  clock = new THREE.Clock();
+  document.body.appendChild(renderer.domElement);
+  width = window.innerWidth;
+  height = window.innerHeight;
+  renderer.setSize(width, height);
+  renderer.setClearColor(0x8888888);
+
+  scene = new THREE.Scene();
+  grid = new THREE.GridHelper(300, 30, 0x222222, 0x111111);
+  scene.add(grid);
+  axes = new THREE.AxisHelper(20);
+  //scene.add(axes);
+
+  camera = new THREE.PerspectiveCamera(35, width / height, 1, 10000);
+  camera.position.y = 26;
+  camera.position.x = 200;
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  met = new THREE.MeshNormalMaterial({
+    transparent: true,
+    opacity: 0.5,
+    visible: true
+  });
+  boxGeometry = new THREE.BoxGeometry(40, 10, 20);
+  cylinderGeometry = new THREE.CylinderGeometry(10, 10, 10, 30);
+  cylinderGeometry2 = new THREE.CylinderGeometry(1.5, 1.5, 10, 30);
+  cylinderGeometry3 = new THREE.CylinderGeometry(1.5, 1.5, 10, 30);
+  muzzle=new THREE.Object3D();
+  base = new THREE.Mesh(boxGeometry, met);
+  turret = new THREE.Mesh(cylinderGeometry, met);
+  turn = new THREE.Mesh(cylinderGeometry2, met);
+  cannon = new THREE.Mesh(cylinderGeometry3, met);
+  base.position.copy(new THREE.Vector3(0, 5, 0));
+  // turret.position.copy(new THREE.Vector3(10,15,0));
+  // turn.position.copy(new THREE.Vector3(20,15,0));
+  //  cannon.position.copy(new THREE.Vector3(25,15,0));
+  turn.rotation.x = Math.PI / 2;
+  cannon.rotation.z = Math.PI / 2;
+  scene.add(base);
+  base.add(turret, new THREE.AxisHelper(5));
+  turret.position.x = 10;
+  turret.position.y = 10;
+  turret.add(turn, new THREE.AxisHelper(5));
+  turn.position.x = 10;
+	muzzle.add(new THREE.AxisHelper(5));
+  turn.add(new THREE.AxisHelper(5));
+  turn.add(cannon);
+  cannon.position.x = 5;
+  //cannon.rotation.y = Math.PI / 2;
+  turn.add(muzzle);
+  muzzle.position.x=10;
+ 	
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    controls.enableKeys = false;
+  
+}
+
+
+function animate() {
+  keyboard.update();
+  controls.update();
+  
+  var dt = clock.getDelta();
+  
+  
+  if(keyboard.pressed('W')){
+  	speed += 0.1;
+  }
+  if(keyboard.pressed('S')){
+  	speed -= 0.1;
+  }
+  if(keyboard.pressed('A')){
+  	baseAngle += 0.01;
+  }
+  if(keyboard.pressed('D')){
+  	baseAngle -= 0.01;
+  }
+  
+  if(keyboard.pressed('up')){
+  	turnAngle += 0.01;
+  }
+  if(keyboard.pressed('down')){
+  	turnAngle -= 0.01;
+  }
+  if(keyboard.pressed('left')){
+  	turretAngle += 0.01;
+  }
+  if(keyboard.pressed('right')){
+  	turretAngle -= 0.01;
+  }
+  if(keyboard.down("space")){
+  	shell.push(new Shell(muzzle.getWorldPosition(),muzzle.getWorldPosition().clone().sub(cannon.getWorldPosition())))
+  }
+  for(var i=0;i<shell.length;i++)
+  	shell[i].update(dt);
+  
+  turnAngle = Math.clamp(turnAngle, -Math.PI / 6, Math.PI / 6);
+  
+
+  turn.rotation.y = turnAngle;
+  turret.rotation.y = turretAngle;
+  base.rotation.y = baseAngle;
+  
+  var vel = new THREE.Vector3(speed,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),baseAngle);
+  pos.add(vel.clone().multiplyScalar(dt));
+	base.position.copy(pos);
+  
+  requestAnimationFrame(animate);
+  render();
+}
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+
+	</script>
+	</body>
+</html>

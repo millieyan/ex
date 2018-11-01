@@ -1,0 +1,336 @@
+<!doctype html>
+<html>
+<head>
+    <style>
+        #title {
+            position: absolute;
+            top: 0px;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            color: #ffff00
+        }
+
+        body {
+            overflow: hidden
+        }
+    </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/96/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+
+<script>
+    var camera, scene, renderer, stats, loader;
+    var angle = 0.0,
+        box, modelB;
+
+    window.addEventListener('resize', onWindowResize, false); //鏡頭
+
+    init();
+    animate();
+
+    function buildModel() {
+        loader = new THREE.TextureLoader();
+        loader.crossOrigin = "";
+        texture = loader.load ("https://i.imgur.com/p8CRm9W.jpg");
+        texture.wrapS = texture.wrapT = THREE.WrapRepeating;
+
+        var shape = new THREE.Shape ();
+        shape.moveTo (0,0);  // xy plane
+        shape.lineTo (4.7,0);
+        shape.lineTo (4.7, 0.8);
+        shape.lineTo (1.65, 2.6);
+        shape.lineTo (0,2.6);
+        shape.lineTo(0,0);
+
+        var holePath = new THREE.Path();
+        holePath.moveTo(1.5, 1.5);
+        holePath.absarc(1.5, 1.5, 0.5, 0, Math.PI * 2, true);
+        shape.holes.push(holePath);
+        //開洞
+        var shapeGeo = new THREE.ShapeGeometry(shape);
+        //弄3D
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(
+            new THREE.Vector3(0,0,0),               //0
+            new THREE.Vector3(0,2.6,0),
+            new THREE.Vector3(1.65,2.6,0),
+            new THREE.Vector3(4.7,0.8,0),
+            new THREE.Vector3(4.7,0,0),
+            new THREE.Vector3(1.65,2.6,-1),         //5
+            new THREE.Vector3(4.7,0.8,-1),
+            new THREE.Vector3(4.7,0,-1),
+            new THREE.Vector3(4.7,0,-2),
+            new THREE.Vector3(4.7,2.6,-2),
+            new THREE.Vector3(4.7,2.6,-1),          //10
+            new THREE.Vector3(1.65,2.6,-2),
+            new THREE.Vector3(0,2.6,-2),
+            new THREE.Vector3(0,0,-2)
+        );
+
+        let face;
+        face = new THREE.Face3(12,1,2);
+        geometry.faces.push (face);
+        face = new THREE.Face3(11,12,2);
+        geometry.faces.push (face);
+        face = new THREE.Face3(11,5,10);
+        geometry.faces.push (face);
+        face = new THREE.Face3(9,11,10);
+        geometry.faces.push (face);
+        face = new THREE.Face3(10,5,6);
+        geometry.faces.push (face);
+        face = new THREE.Face3(6,5,3);
+        geometry.faces.push (face);
+        face = new THREE.Face3(5,2,3);
+        geometry.faces.push (face);
+        face = new THREE.Face3(6,3,4);
+        geometry.faces.push (face);
+        face = new THREE.Face3(7,6,4);
+        geometry.faces.push (face);
+        face = new THREE.Face3(9,10,7);
+        geometry.faces.push (face);
+        face = new THREE.Face3(8,9,7);
+        geometry.faces.push (face);
+        face = new THREE.Face3(1,12,13);
+        geometry.faces.push (face);
+        face = new THREE.Face3(0,1,13);
+        geometry.faces.push (face);
+        face = new THREE.Face3(0,13,4);
+        geometry.faces.push (face);
+        face = new THREE.Face3(4,13,8);
+        geometry.faces.push (face);
+
+        let mesh = new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({map: texture}));
+        shapeGeo.mergeMesh(mesh);
+
+        shape = new THREE.Shape ();
+        shape.moveTo (0,0)  // xy plane
+        shape.lineTo (4.7,0)
+        shape.lineTo (4.7, 2.6)
+        shape.lineTo (0,2.6)
+        shape.lineTo(0,0)
+        //開背
+        holePath = new THREE.Path();
+        holePath.moveTo(1.5, 1.5);
+        holePath.absarc(1.5, 1.5, 0.5, 0, Math.PI * 2, true);
+        shape.holes.push(holePath);
+
+        var shapeGeo2 = new THREE.ShapeGeometry(shape);
+        var mesh1 = new THREE.Mesh(shapeGeo, new THREE.MeshPhongMaterial({map: texture}));
+        //實體化
+        mesh1.position.z = 2;
+        shapeGeo2.mergeMesh(mesh1);
+        shapeGeo2.mergeVertices();
+        shapeGeo2.computeBoundingSphere();
+        shapeGeo2.computeFaceNormals();
+
+        var body = new THREE.Mesh(shapeGeo2,new THREE.MeshPhongMaterial({map: texture, side: THREE.DoubleSide}));
+        var cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,2,64,1,true),new THREE.MeshPhongMaterial({map: texture,side: THREE.BackSide}));
+        cylinder.position.set(1.5,1.5,1);
+        cylinder.rotation.x = Math.PI / 2;
+        body.add(cylinder);
+        return body;
+    }
+
+    function buildBox() {
+        var met = new THREE.MeshNormalMaterial();
+
+        let loader = new THREE.TextureLoader()
+        loader.crossOrigin = '';
+
+        let texture = loader.load('https://i.imgur.com/bv24XBd.jpg?1');
+        let sidetexture = loader.load('https://i.imgur.com/bv24XBd.jpg?1');
+        sidetexture.repeat.set(1, 0.75);
+
+        let matArray = [];
+        matArray.push(new THREE.MeshPhongMaterial({
+            map: sidetexture
+        }));
+        matArray.push(new THREE.MeshPhongMaterial({
+            map: sidetexture
+        }));
+        matArray.push(new THREE.MeshPhongMaterial({
+            map: texture,
+        }));
+        matArray.push(new THREE.MeshPhongMaterial({
+            map: texture
+        }));
+        matArray.push(new THREE.MeshPhongMaterial({
+            map: sidetexture
+        }));
+        matArray.push(new THREE.MeshPhongMaterial({
+            map: sidetexture
+        }));
+        let allMaterial = new THREE.MultiMaterial(matArray);
+        let box = new THREE.Mesh(new THREE.BoxGeometry(40, 30, 40), allMaterial);
+        return box;
+    }
+
+    function buildslant() {
+        let loader = new THREE.TextureLoader()
+        loader.crossOrigin = '';
+        let texture = loader.load('https://i.imgur.com/bv24XBd.jpg?1');
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(
+            new THREE.Vector3(0, 0, 10),
+            new THREE.Vector3(40, 0, 10),
+            new THREE.Vector3(40, 0, -10),
+            new THREE.Vector3(0, 0, -10),
+            new THREE.Vector3(0, 30, 10),
+            new THREE.Vector3(0, 30, -10)
+            //座標
+        );
+        var face = new THREE.Face3(1, 4, 0);
+        geometry.faces.push(face);
+        face = new THREE.Face3(3, 5, 2);
+        geometry.faces.push(face);
+        face = new THREE.Face3(0, 3, 1);
+        geometry.faces.push(face);
+        face = new THREE.Face3(3, 2, 1);
+        geometry.faces.push(face);
+        face = new THREE.Face3(0, 4, 3);
+        geometry.faces.push(face);
+        face = new THREE.Face3(3, 4, 5);
+        geometry.faces.push(face);
+        face = new THREE.Face3(4, 1, 5);
+        geometry.faces.push(face);
+        face = new THREE.Face3(5, 1, 2);
+        geometry.faces.push(face);
+        //逆時針
+        var s = Math.sqrt(30 * 30 + 40 * 40);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(1, 0), new THREE.Vector2(0, 0.75), new THREE.Vector2(0, 0)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.75), new THREE.Vector2(1, 0)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.5), new THREE.Vector2(1, 0)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0.5), new THREE.Vector2(1, 0.5), new THREE.Vector2(1, 0)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(0, 0.75), new THREE.Vector2(0.5, 0)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0.5, 0), new THREE.Vector2(0, 0.75), new THREE.Vector2(0.5, 0.75)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(1.25, 0), new THREE.Vector2(0, 0.5)]);
+        geometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0.5), new THREE.Vector2(1.25, 0), new THREE.Vector2(1.25, 0.5)]);
+        geometry.computeBoundingSphere();
+        geometry.computeFaceNormals();
+        return new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
+            map: texture
+        }));
+    }
+
+    function init() {
+        scene = new THREE.Scene();
+        stats = new Stats();
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.top = '0px';
+        stats.domElement.style.zIndex = 100;
+        document.body.appendChild(stats.domElement);
+
+        camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(0, 0, 300);
+        camera.lookAt(new THREE.Vector3());
+        scene.add(camera);
+
+        light = new THREE.DirectionalLight();
+        //直線光
+        light.position.set(120, 120, 120);
+
+        light.castShadow = true;
+        //會影響影子
+        light.shadow.mapSize.width = 1024;
+        light.shadow.mapSize.height = 1024;
+        //解析
+        light.shadow.camera.near = 10;
+        light.shadow.camera.far = 1000;
+        light.shadow.camera.top = -400;
+        light.shadow.camera.left = -400;
+        light.shadow.camera.right = 400;
+        light.shadow.camera.bottom = 400;
+        //範圍
+        scene.add(light);
+
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x888888);
+        renderer.shadowMap.enabled = true;
+        //為了有影子開啟
+        renderer.shadowMap.type = THREE.PCFShadowMap;
+        //用的演算法
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        //滑鼠移動 鏡頭移動
+        controls.enableKeys = false;
+        document.body.appendChild(renderer.domElement);
+
+        modelB = buildModel();
+        modelB.scale.set(10,10,10);
+        //放大
+        var box = buildBox();
+        var slant = buildslant();
+        slant.position.x = 20;
+        slant.position.y = -15;
+        slant.position.z = -10;
+        box.add(slant);
+
+        var plane = new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),new THREE.MeshPhongMaterial());
+        plane.rotation.x = -Math.PI / 2;
+        plane.receiveShadow = true;
+        //物體影響地板 物體影響光源
+        box.position.y = 50;
+        box.traverse(
+            function (i) {
+                if(i instanceof THREE.Mesh){
+                    i.castShadow = true;
+                }
+            }
+        );
+        //迴圈跑所有box
+        modelB.traverse(
+            function (i) {
+                if(i instanceof THREE.Mesh){
+                    i.castShadow = true;
+                }
+            }
+        );
+
+        light2 = new THREE.SpotLight();
+        light2.position.set(0, 120, 0);
+        light2.penumbra = 0.5;//柔和
+
+        light2.castShadow = true;
+        light2.shadow.mapSize.width = 1024;
+        light2.shadow.mapSize.height = 1024;
+        light2.shadow.camera.near = 10;
+        light2.shadow.camera.far = 1000;
+        light2.shadow.camera.fov = light2.angle / Math.PI * 180 * 2;
+        //角度
+        light2.target = modelB;
+        //跟著model轉
+        scene.add(modelB, box, plane, light2);
+    }
+
+    function animate() {
+        angle += 0.01;
+
+        modelB.position.copy(new THREE.Vector3(100,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),angle).add(new THREE.Vector3(0,50,0)));
+        //旋轉角
+        controls.update();
+        stats.update();
+
+        requestAnimationFrame(animate);
+        render();
+    }
+
+    function render() {
+        renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height);
+    }
+
+
+</script>
+</body>
+</html>
