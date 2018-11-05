@@ -1,0 +1,505 @@
+﻿<!doctype html>
+<html>
+	<head>
+	<style>
+	#title {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    color: #ffff00
+}
+
+body {
+    overflow: hidden
+}
+	</style>
+	</head>
+	<body>
+<div id="info">Homework3<br>
+<button id="play" style="width:20%">Play</button>
+</div>
+<audio id="soundtrack" autoplay loop style="display:none">
+<source src="music/dance.mp3" type='audio/mp3'>
+</audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+
+
+
+	<script>
+var camera, scene, renderer, tarso, soundTrack;
+var clock = new THREE.Clock();
+var isPaused = false;
+var gcontrols = {
+  LinkR1z: -1.5, // s for shoulder
+  LinkR1y: 0.02,
+  LinkR2z: 0.01,
+  LinkR2y: 0.03, // e for elbow
+  LinkL1z: -1.5, // s for shoulder
+  LinkL1y: 0.02,
+  LinkL2z: 0.01,
+  LinkL2y: 0.03,
+  LinkRf1z: -1.5, // s for shoulder
+  LinkRf1y: 0.02,
+  LinkRf2z: 0.01,
+  LinkRf2y: 0.03, // e for elbow
+  LinkLf1z: -1.5, // s for shoulder
+  LinkLf1y: 0.02,
+  LinkLf2z: 0.01,
+  LinkLf2y: 0.03,
+  // torsemove:0.03
+};
+var period = 2; // 3 seconds
+var pose1 = {
+  LinkR1z: -2.1594669002085403,
+  LinkR1y: 0.02,
+  LinkR2z: 0.01,
+  LinkR2y: 0.03,
+  LinkL1z: -2.020729153569679,
+  LinkL1y: 0.02,
+  LinkL2z: 0.01,
+  LinkL2y: 0.03,
+  LinkRf1z: -1.1883026737365112,
+  LinkRf1y: 0.02,
+  LinkRf2z: 0,
+  LinkRf2y: 0.03,
+  LinkLf1z: -1.1189338004170803,
+  LinkLf1y: 0.02,
+  LinkLf2z: 0.01,
+  LinkLf2y: 0.03
+}
+var pose2 = {
+  LinkR1z: -1.084249363757365,
+  LinkR1y: 0.02,
+  LinkR2z: 0,
+  LinkR2y: 0.03,
+  LinkL1z: -1.04956492709765,
+  LinkL1y: 0.02,
+  LinkL2z: 0,
+  LinkL2y: 0.03,
+  LinkRf1z: -1.9166758435905331,
+  LinkRf1y: 0.02,
+  LinkRf2z: 0,
+  LinkRf2y: 0.03,
+  LinkLf1z: -1.9513602802502483,
+  LinkLf1y: 0.02,
+  LinkLf2z: 0,
+  LinkLf2y: 0.03
+}
+var pose3 = {
+  LinkR1z: -2.3675735201668324,
+  LinkR1y: 0.02,
+  LinkR2z: 0,
+  LinkR2y: 0.03,
+  LinkL1z: -0.668036123840781,
+  LinkL1y: 0.02,
+  LinkL2z: 0,
+  LinkL2y: 0.03,
+  LinkRf1z: -1.9166758435905331,
+  LinkRf1y: 0.02,
+  LinkRf2z: 0,
+  LinkRf2y: -0.2865073205839126,
+  LinkLf1z: -1.084249363757365,
+  LinkLf1y: 0.02,
+  LinkLf2z: 0,
+  LinkLf2y: 0.03
+}
+var pose4 = {
+  LinkR1z: -3.2,
+  LinkR1y: 0.02,
+  LinkR2z: 0,
+  LinkR2y: 0.03,
+  LinkL1z: 0,
+  LinkL1y: 0.02,
+  LinkL2z: 0,
+  LinkL2y: 0.03,
+  LinkRf1z: -0.8414583071393582,
+  LinkRf1y: 0.02,
+  LinkRf2z: 0,
+  LinkRf2y: -0.2865073205839126,
+  LinkLf1z: -2.228835773527971,
+  LinkLf1y: 0.02,
+  LinkLf2z: 0,
+  LinkLf2y: 0.03
+}
+// "normal"
+// "popping" keys: https://www.youtube.com/watch?v=YhYsTszCMkM
+var Nkeys = [{
+    s: 0.125,
+    pose: pose1
+  },
+  {
+    s: 0.25,
+    pose: pose2
+  }, {
+    s: 0.4,
+    pose: pose3
+  }, {
+    s: 0.5,
+    pose: pose4
+  },
+  {
+    s: 0.6,
+    pose: pose1
+  }, {
+    s: 0.7,
+    pose: pose2
+  }, {
+    s: 0.85,
+    pose: pose3
+  }, {
+    s: 1,
+    pose: pose4
+  }
+];
+// "popping" keys: https://www.youtube.com/watch?v=YhYsTszCMkM
+
+var keys = Nkeys;
+$('#play').click(function() {
+    isPaused = !isPaused;
+    if (isPaused) {
+        $('#play').text('Play')
+        soundTrack.pause()
+    } else {
+        $('#play').text('Pause')
+        soundTrack.play()
+    }
+});
+init();
+animate();
+
+function makeLink() {
+  var oneLink = new THREE.Object3D();
+  var mesh = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 5), new THREE.MeshBasicMaterial({
+    wireframe: true
+  }));
+  oneLink.add(mesh);
+  mesh.position.set(7.5, 0, 0);
+  joint = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 3, 12),
+    new THREE.MeshBasicMaterial({
+      wireframe: true
+    }));
+  joint.rotation.x = Math.PI / 2;
+  oneLink.add(joint);
+  return oneLink;
+}
+
+function init() {
+  scene = new THREE.Scene();
+soundTrack = document.getElementById('soundtrack');
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.z = 150;
+
+  scene.add(camera);
+
+  var gridXZ = new THREE.GridHelper(50, 10);
+  gridXZ.setColors(new THREE.Color(0xff00ff), new THREE.Color(0xffffff));
+  //scene.add(gridXZ);
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+
+  let controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  document.body.appendChild(renderer.domElement);
+  window.addEventListener('resize', onWindowResize, false);
+
+  torso = new THREE.Mesh(new THREE.BoxGeometry(20, 40, 15),
+    new THREE.MeshBasicMaterial({
+      wireframe: true
+    }));
+  scene.add(torso);
+  torso.position.y = -15;
+
+  var head = new THREE.Mesh(new THREE.CylinderGeometry(5, 8, 10, 20),
+    new THREE.MeshBasicMaterial({
+      wireframe: true
+    }));
+  scene.add(head);
+  head.position.y = 10;
+  ///////////////////////////////////////////////////////////////
+  var oneLink = makeLink();
+
+  linkL1 = oneLink.clone();
+  linkL2 = oneLink.clone();
+  var leftArm = new THREE.Object3D();
+  leftArm.add(linkL1);
+  linkL1.position.x = 10;
+  scene.add(leftArm);
+  linkL1.add(linkL2);
+  linkL2.position.set(15, 0, 0);
+
+  linkR1 = oneLink.clone();
+  linkR2 = oneLink.clone();
+  var rightArm = new THREE.Object3D();
+  rightArm.add(linkR1);
+  linkR1.position.x = -10;
+  linkR1.rotation.y = Math.PI;
+  scene.add(rightArm);
+  linkR1.add(linkR2);
+  linkR2.position.set(15, 0, 0);
+
+  linkLf1 = oneLink.clone();
+  linkLf2 = oneLink.clone();
+  var leftfoot = new THREE.Object3D();
+  leftfoot.add(linkLf1);
+  linkLf1.position.y = -35;
+  linkLf1.position.x = 8;
+  linkLf1.rotation.z = -Math.PI / 2;
+  scene.add(leftfoot);
+  linkLf1.add(linkLf2);
+  linkLf2.position.set(15, 0, 0);
+
+  linkRf1 = oneLink.clone();
+  linkRf2 = oneLink.clone();
+  var rightfoot = new THREE.Object3D();
+  rightfoot.add(linkRf1);
+  linkRf1.position.y = -35;
+  linkRf1.position.x = -8;
+  linkRf1.rotation.y = Math.PI;
+  linkRf1.rotation.z = -Math.PI / 2;
+  scene.add(rightfoot);
+  linkRf1.add(linkRf2);
+  linkRf2.position.set(15, 0, 0);
+  var gui = new dat.GUI({
+    load: loadJSON()
+  });
+  gui.remember(gcontrols)
+  gui.add(gcontrols, 'LinkR1z', -3.2, 0);
+  gui.add(gcontrols, 'LinkR1y', -3.2, 3.2);
+  gui.add(gcontrols, 'LinkR2z', -3.2, 0);
+  gui.add(gcontrols, 'LinkR2y', -3.2, 3.2);
+  gui.add(gcontrols, 'LinkL1z', -3.2, 0);
+  gui.add(gcontrols, 'LinkL1y', -3.2, 3.2);
+  gui.add(gcontrols, 'LinkL2z', -3.2, 0);
+  gui.add(gcontrols, 'LinkL2y', -3.2, 3.2);
+
+  gui.add(gcontrols, 'LinkRf1z', -3.2, 0);
+  gui.add(gcontrols, 'LinkRf1y', -3.2, 3.2);
+  gui.add(gcontrols, 'LinkRf2z', -3.2, 0);
+  gui.add(gcontrols, 'LinkRf2y', -3.2, 3.2);
+  gui.add(gcontrols, 'LinkLf1z', -3.2, 0);
+  gui.add(gcontrols, 'LinkLf1y', -3.2, 3.2);
+  gui.add(gcontrols, 'LinkLf2z', -3.2, 0);
+  gui.add(gcontrols, 'LinkLf2y', -3.2, 3.2);
+  // gui.add (gcontrols, 'torsemove', -3.2, 3.2
+  // gui.add (gcontrols, 'torsemove', -3.2, 3.2);
+  /* gui.add (gcontrols, 'sY', -3.2, 3.2);
+  gui.add (gcontrols, 'eX', -3, 0);
+  gui.add (gcontrols, 'sZb', 0,3.2);
+  gui.add (gcontrols, 'sXb', -3.2, 3.2);
+  gui.add (gcontrols, 'sYb', -3.2, 3.2);
+  gui.add (gcontrols, 'eXb', -3, 0);
+  gui.add (gcontrols, 'posY', 0, 20);
+*/
+}
+
+function loadJSON() {
+  return {
+    "remembered": {
+      "Default": {
+        "0": {
+          "LinkR1z": -1.5,
+          "LinkR1y": 0.02,
+          "LinkR2z": 0.01,
+          "LinkR2y": 0.03,
+          "LinkL1z": -1.5,
+          "LinkL1y": 0.02,
+          "LinkL2z": 0.01,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -1.5,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": 0.01,
+          "LinkRf2y": 0.03,
+          "LinkLf1z": -1.5,
+          "LinkLf1y": 0.02,
+          "LinkLf2z": 0.01,
+          "LinkLf2y": 0.03
+        }
+      },
+      "a": {
+        "0": {
+          "LinkR1z": -2.1594669002085403,
+          "LinkR1y": 0.02,
+          "LinkR2z": 0.01,
+          "LinkR2y": 0.03,
+          "LinkL1z": -2.020729153569679,
+          "LinkL1y": 0.02,
+          "LinkL2z": 0.01,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -1.1883026737365112,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": 0,
+          "LinkRf2y": 0.03,
+          "LinkLf1z": -1.1189338004170803,
+          "LinkLf1y": 0.02,
+          "LinkLf2z": 0.01,
+          "LinkLf2y": 0.03
+        }
+      },
+      "b": {
+        "0": {
+          "LinkR1z": -1.084249363757365,
+          "LinkR1y": 0.02,
+          "LinkR2z": 0,
+          "LinkR2y": 0.03,
+          "LinkL1z": -1.04956492709765,
+          "LinkL1y": 0.02,
+          "LinkL2z": 0,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -1.9166758435905331,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": 0,
+          "LinkRf2y": 0.03,
+          "LinkLf1z": -1.9513602802502483,
+          "LinkLf1y": 0.02,
+          "LinkLf2z": 0,
+          "LinkLf2y": 0.03
+        }
+      },
+      "c": {
+        "0": {
+          "LinkR1z": -2.3675735201668324,
+          "LinkR1y": 0.02,
+          "LinkR2z": 0,
+          "LinkR2y": 0.03,
+          "LinkL1z": -0.668036123840781,
+          "LinkL1y": 0.02,
+          "LinkL2z": 0,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -1.9166758435905331,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": 0,
+          "LinkRf2y": -0.2865073205839126,
+          "LinkLf1z": -1.084249363757365,
+          "LinkLf1y": 0.02,
+          "LinkLf2z": 0,
+          "LinkLf2y": 0.03
+        }
+      },
+      "d": {
+        "0": {
+          "LinkR1z": -3.2,
+          "LinkR1y": 0.02,
+          "LinkR2z": 0,
+          "LinkR2y": 0.03,
+          "LinkL1z": 0,
+          "LinkL1y": 0.02,
+          "LinkL2z": 0,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -0.8414583071393582,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": 0,
+          "LinkRf2y": -0.2865073205839126,
+          "LinkLf1z": -2.228835773527971,
+          "LinkLf1y": 0.02,
+          "LinkLf2z": 0,
+          "LinkLf2y": 0.03
+        }
+      }
+    },
+    "preset": "d",
+    "closed": false,
+    "folders": {}
+  }
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate() {
+  linkR1.rotation.z = gcontrols.LinkR1z
+  linkR1.rotation.y = gcontrols.LinkR1y
+  linkR2.rotation.z = gcontrols.LinkR2z
+  linkR2.rotation.y = gcontrols.LinkR2y
+  linkL1.rotation.z = gcontrols.LinkL1z
+  linkL1.rotation.y = gcontrols.LinkL1y
+  linkL2.rotation.z = gcontrols.LinkL2z
+  linkL2.rotation.y = gcontrols.LinkL2y
+
+  linkRf1.rotation.z = gcontrols.LinkRf1z
+  linkRf1.rotation.y = gcontrols.LinkRf1y
+  linkRf2.rotation.z = gcontrols.LinkRf2z
+  linkRf2.rotation.y = gcontrols.LinkRf2y
+  linkLf1.rotation.z = gcontrols.LinkLf1z
+  linkLf1.rotation.y = gcontrols.LinkLf1y
+  linkLf2.rotation.z = gcontrols.LinkLf2z
+  linkLf2.rotation.y = gcontrols.LinkLf2y
+  //  torso.position.y=gcontrols.torsomove
+  //keys = Pkeys;
+
+  var t = clock.getElapsedTime() % period;
+  var s = t / period; // normalized time
+
+  for (var i = 1; i < keys.length; i++) {
+    if (keys[i].s > s)
+      break;
+  }
+  // take previous one
+  i = i - 1;
+
+  // linearly interpolate between i & i+1
+  var tt = (s - keys[i].s) / (keys[i + 1].s - keys[i].s);
+  var LinkR1z2 = (1 - tt) * keys[i].pose.LinkR1z + tt * keys[i + 1].pose.LinkR1z;
+  var LinkR1y2 = (1 - tt) * keys[i].pose.LinkR1y + tt * keys[i + 1].pose.LinkR1y;
+  var LinkR2z2 = (1 - tt) * keys[i].pose.LinkR2z + tt * keys[i + 1].pose.LinkR2z;
+  var LinkR2y2 = (1 - tt) * keys[i].pose.LinkR2y + tt * keys[i + 1].pose.LinkR2y;
+  var LinkL1z2 = (1 - tt) * keys[i].pose.LinkL1z + tt * keys[i + 1].pose.LinkL1z;
+  var LinkL1y2 = (1 - tt) * keys[i].pose.LinkL1y + tt * keys[i + 1].pose.LinkL1y;
+  var LinkL2z2 = (1 - tt) * keys[i].pose.LinkL2z + tt * keys[i + 1].pose.LinkL2z;
+  var LinkL2y2 = (1 - tt) * keys[i].pose.LinkL2y + tt * keys[i + 1].pose.LinkL2y;
+  
+  var LinkRf1z2 = (1 - tt) * keys[i].pose.LinkRf1z + tt * keys[i + 1].pose.LinkRf1z;
+  var LinkRf1y2 = (1 - tt) * keys[i].pose.LinkRf1y + tt * keys[i + 1].pose.LinkRf1y;
+  var LinkRf2z2 = (1 - tt) * keys[i].pose.LinkRf2z + tt * keys[i + 1].pose.LinkRf2z;
+  var LinkRf2y2 = (1 - tt) * keys[i].pose.LinkRf2y + tt * keys[i + 1].pose.LinkRf2y;
+  var LinkLf1z2 = (1 - tt) * keys[i].pose.LinkLf1z + tt * keys[i + 1].pose.LinkLf1z;
+  var LinkLf1y2 = (1 - tt) * keys[i].pose.LinkLf1y + tt * keys[i + 1].pose.LinkLf1y;
+  var LinkLf2z2 = (1 - tt) * keys[i].pose.LinkLf2z + tt * keys[i + 1].pose.LinkLf2z;
+  var LinkLf2y2 = (1 - tt) * keys[i].pose.LinkLf2y + tt * keys[i + 1].pose.LinkLf2y;
+  /*    var LShoulderx = (1 - tt) * keys[i].pose.LShoulderx + tt * keys[i + 1].pose.LShoulderx;
+    var LElbowx = (1 - tt) * keys[i].pose.LElbowx + tt * keys[i + 1].pose.LElbowx;
+    var RShoulderx = (1 - tt) * keys[i].pose.RShoulderx + tt * keys[i + 1].pose.RShoulderx;
+    var RElbowx = (1 - tt) * keys[i].pose.RElbowx + tt * keys[i + 1].pose.RElbowx;
+   var Lfootx = (1 - tt) * keys[i].pose.Lfootx + tt * keys[i + 1].pose.Lfootx;
+    var Lfoot2x = (1 - tt) * keys[i].pose.Lfoot2x+ tt * keys[i + 1].pose.Lfoot2x;
+    var Rfootx = (1 - tt) * keys[i].pose.Rfootx + tt * keys[i + 1].pose.Rfootx;
+    var Rfoot2x= (1 - tt) * keys[i].pose.Rfoot2x+ tt * keys[i + 1].pose.Rfoot2x;*/
+
+	
+    linkL1.rotation.z = LinkL1z2;
+   linkL2.rotation.z = LinkL2y2;
+    linkR1.rotation.z =LinkR1z2;
+    linkR2.rotation.z = LinkR2z2;
+    linkLf1.rotation.z = LinkLf1z2;
+    linkLf2.rotation.z = LinkLf2z2;
+    linkRf1.rotation.z = LinkRf1z2;
+    linkRf2.rotation.z = LinkRf2z2;
+  linkL1.rotation.y = LinkLf1y2;
+  linkL2.rotation.y = LinkLf2y2;
+  linkR1.rotation.y = LinkRf1y2;
+  linkR2.rotation.y = LinkRf2y2;
+  linkLf1.rotation.y =LinkLf1y2;
+  linkLf2.rotation.y = LinkLf2y2;
+  linkRf1.rotation.y = LinkRf1y2;
+  linkRf2.rotation.y = LinkLf2y2;
+
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+
+
+	</script>
+	</body>
+</html>
