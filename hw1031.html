@@ -128,34 +128,88 @@ var pose4 = {
   LinkLf2z: 0,
   LinkLf2y: 0.03
 }
+var pose5 = {
+  LinkR1z: -0.5639828138616352,
+  LinkR1y: -3.2,
+  LinkR2z: -0.00903182730619001,
+  LinkR2y: 0.337812539290963,
+  LinkL1z: -0.7027205605004965,
+  LinkL1y: -0.1477695739450513,
+  LinkL2z: -3.2,
+  LinkL2y: 3.2,
+  LinkRf1z: -2.020729153569679,
+  LinkRf1y: 0.02,
+  LinkRf2z: -0.00903182730619001,
+  LinkRf2y: -0.2865073205839126,
+  LinkLf1z: -1.1536182370767958,
+  LinkLf1y: 0.12970591933267084,
+  LinkLf2z: 0,
+  LinkLf2y: 0.03
+}
+var pose6 = {
+  LinkR1z: -2.2982046468474016,
+  LinkR1y: 0.02,
+  LinkR2z: 1.308976765762992,
+  LinkR2y: -0.21713844726448217,
+  LinkL1z: -0.8067738704796428,
+  LinkL1y: -0.07840070062562088,
+  LinkL2z: -1.361724857035088,
+  LinkL2y: 0.03,
+  LinkRf1z: -1.9860447169099638,
+  LinkRf1y: 0.02,
+  LinkRf2z: 1.1702390191241312,
+  LinkRf2y: -0.2865073205839126,
+  LinkLf1z: -1.04956492709765,
+  LinkLf1y: 0.12970591933267084,
+  LinkLf2z: -1.1883026737365112,
+  LinkLf2y: -0.4946139405422043
+}
+var pose7 = {
+  LinkR1z: -2.2982046468474016,
+  LinkR1y: 0.02,
+  LinkR2z: 1.308976765762992,
+  LinkR2y: -0.21713844726448217,
+  LinkL1z: -0.8067738704796428,
+  LinkL1y: -0.07840070062562088,
+  LinkL2z: -1.361724857035088,
+  LinkL2y: 0.03,
+  LinkRf1z: -1.4310937303545186,
+  LinkRf1y: 0.060337046013240414,
+  LinkRf2z: -0.8414583071393582,
+  LinkRf2y: -0.2865073205839126,
+  LinkLf1z: -1.6738847869725257,
+  LinkLf1y: -0.07840070062562088,
+  LinkLf2z: 0.8927635258464086,
+  LinkLf2y: -0.4252450672227739
+}
 // "normal"
 // "popping" keys: https://www.youtube.com/watch?v=YhYsTszCMkM
 var Nkeys = [{
     s: 0.125,
-    pose: pose1
+    pose: pose3
   },
   {
     s: 0.25,
-    pose: pose2
+    pose: pose1
   }, {
     s: 0.4,
-    pose: pose3
+    pose: pose2
   }, {
     s: 0.5,
-    pose: pose4
+    pose: pose5
   },
   {
     s: 0.6,
-    pose: pose1
+    pose: pose6
   }, {
     s: 0.7,
-    pose: pose2
+    pose: pose7
   }, {
     s: 0.85,
-    pose: pose3
+    pose: pose6
   }, {
     s: 1,
-    pose: pose4
+    pose: pose7
   }
 ];
 // "popping" keys: https://www.youtube.com/watch?v=YhYsTszCMkM
@@ -303,6 +357,7 @@ soundTrack = document.getElementById('soundtrack');
 
 function loadJSON() {
   return {
+
     "remembered": {
       "Default": {
         "0": {
@@ -403,13 +458,76 @@ function loadJSON() {
           "LinkLf2z": 0,
           "LinkLf2y": 0.03
         }
+      },
+      "e": {
+        "0": {
+          "LinkR1z": -0.5639828138616352,
+          "LinkR1y": -3.2,
+          "LinkR2z": -0.00903182730619001,
+          "LinkR2y": 0.337812539290963,
+          "LinkL1z": -0.7027205605004965,
+          "LinkL1y": -0.1477695739450513,
+          "LinkL2z": -3.2,
+          "LinkL2y": 3.2,
+          "LinkRf1z": -2.020729153569679,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": -0.00903182730619001,
+          "LinkRf2y": -0.2865073205839126,
+          "LinkLf1z": -1.1536182370767958,
+          "LinkLf1y": 0.12970591933267084,
+          "LinkLf2z": 0,
+          "LinkLf2y": 0.03
+        }
+      },
+      "f": {
+        "0": {
+          "LinkR1z": -2.2982046468474016,
+          "LinkR1y": 0.02,
+          "LinkR2z": 1.308976765762992,
+          "LinkR2y": -0.21713844726448217,
+          "LinkL1z": -0.8067738704796428,
+          "LinkL1y": -0.07840070062562088,
+          "LinkL2z": -1.361724857035088,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -1.9860447169099638,
+          "LinkRf1y": 0.02,
+          "LinkRf2z": 1.1702390191241312,
+          "LinkRf2y": -0.2865073205839126,
+          "LinkLf1z": -1.04956492709765,
+          "LinkLf1y": 0.12970591933267084,
+          "LinkLf2z": -1.1883026737365112,
+          "LinkLf2y": -0.4946139405422043
+        }
+      },
+      "g": {
+        "0": {
+          "LinkR1z": -2.2982046468474016,
+          "LinkR1y": 0.02,
+          "LinkR2z": 1.308976765762992,
+          "LinkR2y": -0.21713844726448217,
+          "LinkL1z": -0.8067738704796428,
+          "LinkL1y": -0.07840070062562088,
+          "LinkL2z": -1.361724857035088,
+          "LinkL2y": 0.03,
+          "LinkRf1z": -1.4310937303545186,
+          "LinkRf1y": 0.060337046013240414,
+          "LinkRf2z": -0.8414583071393582,
+          "LinkRf2y": -0.2865073205839126,
+          "LinkLf1z": -1.6738847869725257,
+          "LinkLf1y": -0.07840070062562088,
+          "LinkLf2z": 0.8927635258464086,
+          "LinkLf2y": -0.4252450672227739
+        }
       }
     },
-    "preset": "d",
+    "preset": "e",
     "closed": false,
     "folders": {}
   }
+
+
 }
+
 
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
