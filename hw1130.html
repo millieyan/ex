@@ -1,0 +1,242 @@
+﻿<!doctype html>
+<html>
+	<head>
+	<style>
+	#title {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    color: #ffff00
+}
+
+body {
+    overflow: hidden
+}
+	</style>
+	</head>
+	<body>
+<div id="info">Homework4
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/96/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+
+
+</script>
+<script src="https://rawgit.com/mrdoob/three.js/dev/examples/js/Gyroscope.js"></script>
+<script src="https://jyunming-chen.github.io/game3js/js/ccdsys.js"></script>
+
+
+
+
+
+	<script>
+class biped {
+  constructor() {
+    this.theta1 = 0.31;
+    this.theta2 = 0.6;
+  }
+  init() {
+    let body = new THREE.Object3D();
+    let mat = new THREE.MeshNormalMaterial();
+
+    this.thigh = new THREE.Object3D();
+    let thighMesh = new THREE.Mesh(new THREE.BoxGeometry(1, L2, 1), mat)
+    this.thigh.add(thighMesh)
+    thighMesh.position.y = -L2 / 2
+
+    this.leg = new THREE.Object3D()
+    let legMesh = new THREE.Mesh(new THREE.BoxGeometry(1, L1, 1), mat)
+    this.leg.add(legMesh)
+    legMesh.position.y = -L1 / 2
+    this.leg.position.y = -L2
+
+    this.torso = new THREE.Object3D();
+    let torsoMesh = new THREE.Mesh(new THREE.BoxGeometry(1, Lh, 1), mat)
+    this.torso.add(torsoMesh)
+    torsoMesh.position.y = Lh / 2
+
+    body.add(this.torso)
+    body.add(this.thigh)
+    this.thigh.add(this.leg)
+    return body;
+  }
+
+  update(thetas) {
+    this.theta1 = thetas[0]
+    this.theta2 = thetas[1]
+
+    this.thigh.rotation.z = this.theta1;
+    this.leg.rotation.z = this.theta2;
+  }
+
+}
+
+
+var camera, scene, renderer;
+const LS = 4.3
+const L2 = 5.2
+const L1 = 4.8
+const Lh = 3.3
+const Hh = 8.3
+const Hr = 0.6
+const Fc = 1.0
+const TS = 5.0
+var body, theta1, theta2;
+var legL, legR;
+var clock = new THREE.Clock();
+var clock2 = new THREE.Clock();
+var clock3 = new THREE.Clock();
+var target2, totala, alla = 0,
+  period = 1,
+  totalb = 5,
+  allb = 0,
+  target3, period = 1;
+var flag = true;
+var feetclock, feetclock2;
+init();
+animate();
+
+function fk(thetas, joints) { // all memory assumed in place
+  joints[0].set(0, 0, 0);
+
+  var localzero = new THREE.Vector3(0, 0, 0);
+  var m = new THREE.Matrix4();
+  m.makeRotationZ(thetas[0]);
+  m.multiply(new THREE.Matrix4().makeTranslation(0, -L2, 0));
+  localzero.applyMatrix4(m);
+  joints[1].copy(localzero);
+
+  localzero.set(0, 0, 0);
+  m.multiply(new THREE.Matrix4().makeRotationZ(thetas[1]));
+  m.multiply(new THREE.Matrix4().makeTranslation(0, -L1, 0));
+  localzero.applyMatrix4(m);
+  joints[2].copy(localzero);
+}
+
+
+function init() {
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.z = 40;
+
+  var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+//  scene.add(gridXZ);
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x00a3ff);
+
+
+
+  let controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  document.body.appendChild(renderer.domElement);
+  ///////////////////////////////////////////////////////////
+  legLeft = new biped();
+  legL = legLeft.init();
+  scene.add(legL);
+  legL.position.set = (0, Hh, 1);
+
+
+  legLeft.ccdSys = new CCDSys(fk)
+  legLeft.ccdSys.setCCDAxis(new THREE.Vector3(0, 0, 1), 0)
+  legLeft.ccdSys.setCCDAxis(new THREE.Vector3(0, 0, 1), 1, -Math.PI / 2, 0)
+  legLeft.target = new THREE.Vector3();
+
+  legRight = new biped();
+  legR = legRight.init();
+  scene.add(legR);
+  legR.position.set = (0, Hh, -1);
+
+
+  legRight.ccdSys = new CCDSys(fk)
+  legRight.ccdSys.setCCDAxis(new THREE.Vector3(0, 0, 1), 0)
+  legRight.ccdSys.setCCDAxis(new THREE.Vector3(0, 0, 1), 1, -Math.PI, 0)
+  legRight.target = new THREE.Vector3();
+
+  gyro = new THREE.Gyroscope();
+  scene.add(gyro)
+  gyro.add(camera)
+  legL.add(gyro)
+  
+    light = new THREE.AmbientLight();
+  light.position.set(100, 100, 100);
+  scene.add(light);
+  
+	let loader = new THREE.TextureLoader()
+    loader.crossOrigin = '';
+  var  texture = loader.load ( 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqXR9-TPwvsBdpkBjs2BEN0MKK3891h-J9BVHQPl-CoJIA0F1DNQ' );
+   let plane = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshPhongMaterial({map:texture
+  }));
+  scene.add(plane);
+  plane.rotation.x = -Math.PI / 2;
+   
+}
+
+function animate() {
+  var dt = clock.getElapsedTime();
+  
+  feetclock = clock2.getElapsedTime(); //抓取時間
+  feetclock2 = clock3.getElapsedTime();
+  //  thetaGroin = 0.31
+  //  thetaKnee = 0.6
+
+  if (flag) { //判斷為右腳時
+    feetclock = clock2.getElapsedTime();
+    totala = alla + feetclock;
+  } else {
+    feetclock2 = clock3.getElapsedTime();
+    totalb = allb + feetclock2;
+  }
+  if (dt > TS * period && flag) {
+    flag = !flag;
+    alla = totala;
+    allb = totala;
+    clock2.stop();
+    clock3.start();
+    period += 1;
+  } else if (dt > TS * period) {
+    flag = !flag;
+    allb = totalb;
+    clock3.stop();
+    clock2.start();
+    period += 1;
+  }
+  legL.position.x = LS / 2 + LS * (dt / TS);
+  legL.position.y = Hh - Hr / 2 * Math.cos(2 * Math.PI * (dt / TS));
+  legR.position.x = LS / 2 + LS * (dt / TS);
+  legR.position.y = Hh - Hr / 2 * Math.cos(2 * Math.PI * (dt / TS));
+  legL.position.z = 0.5;
+  legR.position.z = -0.5;
+  //hip
+ // target2 = new THREE.Vector3(2 * LS * (totala / TS), Fc / 2 - Fc / 2 * Math.cos(2 * Math.PI * (totala / TS)), 1)
+ // target3 = new THREE.Vector3(2 * LS * (totalb / TS), Fc / 2 - Fc / 2 * Math.cos(2 * Math.PI * (totalb / TS)), -1)
+   
+   target2 = new THREE.Vector3(2*LS*(totala/TS)+1,-1/2*Math.cos(2*Math.PI*(totala/TS))+1,TS)
+   target3 = new THREE.Vector3(2*LS*(totalb/TS)-LS+1,-1/2*Math.cos(2*Math.PI*(totalb/TS))+1,-TS)
+  //feet
+
+  let thetas = [legLeft.theta1, legLeft.theta2];
+  let thetas2 = [legRight.theta1, legRight.theta2];
+  legLeft.target.copy(legL.worldToLocal(target2));
+  legLeft.ccdSys.solve(legLeft.target, thetas);
+  legLeft.update(thetas);
+  //thetas[0] = 0.31, thetas[1] = -0.6;
+  legRight.target.copy(legR.worldToLocal(target3));
+  legRight.ccdSys.solve(legRight.target, thetas2);
+  legRight.update(thetas2);
+  //biped.update (theta)	
+  requestAnimationFrame(animate);
+  render();
+}
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+	</script>
+	</body>
+</html>
