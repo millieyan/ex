@@ -18,14 +18,14 @@ function agentMesh (size, colorName='red') {
 
 class Agent {
   constructor(pos, halfSize) {
-  	this.name = "jmchen";
+  	this.name = "millie";
     this.pos = pos.clone();
     this.vel = new THREE.Vector3();
     this.force = new THREE.Vector3();
     this.target = null;
     this.halfSize = halfSize;  // half width
     this.mesh = agentMesh (this.halfSize, 'cyan');
-    this.MAXSPEED = 50;
+    this.MAXSPEED = 300;
     this.ARRIVAL_R = 30;
     
     this.score = 0;
@@ -52,8 +52,26 @@ class Agent {
 
     // pick the most threatening one
     // apply the repulsive force
-    // (write your code here)
+      var i;
+      for(i=0; i<obs.length; i++){
+          let vhat = this.vel.clone().normalize();
+          let point = obs[i].center.clone().sub (this.pos) // c-p
+          let proj  = point.dot(vhat);
+          const REACH = 50
+          const K = 50
 
+          if (proj >= 0 && proj <= REACH ) {
+              let perp = new THREE.Vector3();
+              perp.subVectors (point, vhat.clone().setLength(proj));
+              let overlap = obs[i].size + this.halfSize  - perp.length()
+              if (overlap > 0) {
+                  perp.setLength (K*overlap);
+                  perp.negate()
+                  this.force.add (perp);
+                  console.log ("hit:", perp);
+              }
+          }
+      }
 	// Euler's method       
     this.vel.add(this.force.clone().multiplyScalar(dt));
 
