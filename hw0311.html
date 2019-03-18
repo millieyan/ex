@@ -6,7 +6,7 @@
       Light off
     </button>
     <button id="play">
-    Play
+    Pause
     </button>
 
   <img src="https://i.imgur.com/omX5Drl.png" style="position:absolute;top:8vw;left:17vw;width:70vw;z-index:-1">
@@ -15,8 +15,8 @@
   <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:44vw;left:35vw;width:8vw;z-index:-1">
   <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:57vw;left:68vw;width:9vw;z-index:-1">
   <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:54vw;left:58vw;width:7vw;z-index:-1">
-
-  <img src="http://file02.16sucai.com/d/file/2014/1025/119b4d721258f1af730baec83c96bcb1.jpg" style="position:absolute;top:80vw;left:12vw;width:35vw;z-index:-1">
+  <img src="http://www.darcymaulsby.com/blog/wp-content/uploads/2017/12/gift-boxes.png" style="position:absolute;top:83.5vw;left:15vw;width:33vw;z-index:-1">
+  <img src="https://photo.16pic.com/00/88/37/16pic_8837725_b.png" style="position:absolute;top:7vw;left:8vw;width:25vw;z-index:-1">
  <audio id="soundtrack" autoplay loop style="display:none">
 <source src="music/xmas.mp3" type='audio/mp3'>
 </audio>
@@ -39,9 +39,13 @@ $('#light').click ( function() {
   	$('#light').text ('Light on');  
   }
 });
+var isPaused = true;
+var soundTrack;
+soundTrack = document.getElementById('soundtrack');
+
 $('#play').click(function() {
     isPaused = !isPaused;
-    if (isPaused) {
+    if (!isPaused) {
         $('#play').text('Play')
         soundTrack.pause()
     } else {
@@ -81,9 +85,7 @@ class Light {
 init();
 
 function init() {
-var soundTrack;
-soundTrack = document.getElementById('soundtrack');
-var isPaused = false;
+
   var light = new Light();
   var light2 = new Light();
   var light3 = new Light();
