@@ -27,10 +27,10 @@
 </div>
 
 	<script>
-var status = true;
+var slight = true;
 $('#light').click ( function() {
-	status = !status;
-  if (status === true) 
+	slight = !slight;
+  if (slight === true) 
   {
   	$('#light').text ('Light off');  
   }
@@ -69,9 +69,9 @@ class Light {
 
     var self = this;
     var hue = Math.random() * 200; 
-    if(status==true)
+    if(slight==true)
     {
-    self.element.style.background = "hsl(" + hue + ", 72%, 50%)";}
+   self.element.style.background = "hsl(" + hue + ", 72%, 50%)";}
     else
      {
     self.element.style.background = "hsl("+ 0 +", 5%, 30%)";}
