@@ -9,14 +9,14 @@
     Pause
     </button>
 
-  <img src="https://i.imgur.com/omX5Drl.png" style="position:absolute;top:8vw;left:17vw;width:70vw;z-index:-1">
-  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:1.2vw;left:46vw;width:14vw;z-index:-1">
-  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:30vw;left:57vw;width:7vw;z-index:-1">
-  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:44vw;left:35vw;width:8vw;z-index:-1">
-  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:57vw;left:68vw;width:9vw;z-index:-1">
-  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:54vw;left:58vw;width:7vw;z-index:-1">
-  <img src="http://www.darcymaulsby.com/blog/wp-content/uploads/2017/12/gift-boxes.png" style="position:absolute;top:83.5vw;left:15vw;width:33vw;z-index:-1">
-  <img src="https://photo.16pic.com/00/88/37/16pic_8837725_b.png" style="position:absolute;top:7vw;left:8vw;width:25vw;z-index:-1">
+  <img src="https://i.imgur.com/omX5Drl.png" style="position:absolute;top:3vw;left:34vw;height:43vw;width:34vw;z-index:-1">
+  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:0.5vw;left:48.5vw;width:6vw;z-index:-1">
+  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:15vw;left:45vw;width:4vw;z-index:-1">
+ <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:25vw;left:60vw;width:3vw;z-index:-1">
+  <img src="http://demo.sc.chinaz.com/Files/pic/icons/6729/g10.png" style="position:absolute;top:20vw;left:50vw;width:9vw;z-index:-1">
+  <img src="http://www.shejiye.com/uploadfile/icon/2017/0203/shejiyeicon53rvnpdp40s.png" style="position:absolute;top:22vw;left:59vw;width:2vw;z-index:-1">
+  <img src="http://www.darcymaulsby.com/blog/wp-content/uploads/2017/12/gift-boxes.png" style="position:absolute;top:38.5vw;left:33vw;width:15vw;z-index:-1">
+  <img src="https://photo.16pic.com/00/88/37/16pic_8837725_b.png" style="position:absolute;top:5vw;left:25vw;width:14vw;z-index:-1">
  <audio id="soundtrack" autoplay loop style="display:none">
 <source src="music/xmas.mp3" type='audio/mp3'>
 </audio>
@@ -27,12 +27,10 @@
 var slight = true;
 $('#light').click ( function() {
 	slight = !slight;
-  if (slight === true) 
-  {
+  if (slight === true){
   	$('#light').text ('Light off');  
   }
-  else 
-  {
+  else {
   	$('#light').text ('Light on');  
   }
 });
@@ -54,7 +52,7 @@ class Light {
   constructor() {
     this.element = document.createElement('div');
     this.element.id = 'light';
-    this.element.style.cssText = "position:absolute;width:20px;height:20px;border-radius:15px;z-index:1";
+    this.element.style.cssText = "position:absolute;width:11px;height:11px;border-radius:15px;z-index:1";
 
 
     this.element.style.background = "hsl(1, 4%, 51%)";
@@ -68,133 +66,37 @@ class Light {
     var hue = Math.random() * 200; 
     if(slight==true)
     {
-   self.element.style.background = "hsl(" + hue + ", 72%, 50%)";}
+   self.element.style.background = "hsl(" + hue + ", 90%, 50%)";}
     else
      {
-    self.element.style.background = "hsl("+ 0 +", 5%, 30%)";}
+    self.element.style.background = "hsl("+ 0 +", 50%, 30%)";}
     setTimeout(function() {
       self.changeColor()
     }, 1000);
   }
 
 }
+var light=[];
 
 init();
 
-function init() {
+	function init() {
+	for(i=1;i<21;i++){
+	 light.push(new Light());
+	}  
 
-  var light = new Light();
-  var light2 = new Light();
-  var light3 = new Light();
-  var light4 = new Light();
-  var light5 = new Light();
-  var light6 = new Light();
-  var light7 = new Light();
-  var light8 = new Light();
-  var light9 = new Light();
-  var light10 = new Light();
-  //var light11 = new Light();
-  var light12 = new Light();
-  var light13 = new Light();
-  var light14 = new Light();
-  var light15 = new Light();
-  var light16 = new Light();
-  var light17 = new Light();
-  var light18 = new Light();
-  var light19 = new Light();
-  var light20 = new Light();
-  var light21 = new Light();
-  var light22 = new Light();
-  var light23 = new Light();
-  var light24 = new Light();
-  var light25 = new Light();
-  var light26 = new Light();
+	var lightProps=[['10vw','46.5vw'],['8vw','50vw'],['6vw','53.5vw'],['12vw','50vw'],['13.5vw','53vw'],
+	['15vw','56.5vw'],['16.5vw','53.5vw'],['18vw','50.5vw'],['20.5vw','47.5vw'],['22vw','44.5vw'],
+	['23.5vw','41.5vw'],['25vw','38.5vw'],['26vw','41.5vw'],['27vw','44.5vw'],['28vw','47.5vw'],['29vw','50.5vw']
+	,['30vw','53.5vw'],['31vw','56.5vw'],['32vw','59.5vw'],['33vw','62.5vw']];
+  light.forEach(function(light,index){
   light.changeColor();
-  light.element.style.top = '20vw';
-  light.element.style.left = '42.5vw';
-  light2.changeColor();
-  light2.element.style.top = '22vw';
-  light2.element.style.left = '51vw';
-  light3.changeColor();
-  light3.element.style.top = '24vw';
-  light3.element.style.left = '59vw';
+  light.element.style.top = lightProps[index][0];
+  light.element.style.left = lightProps[index][1];
 
-  light4.changeColor();
-  light4.element.style.top = '28vw';
-  light4.element.style.left = '52vw';
-  light5.changeColor();
-  light5.element.style.top = '31vw';
-  light5.element.style.left = '45vw';
-  light6.changeColor();
-  light6.element.style.top = '34vw';
-  light6.element.style.left = '38vw';
+});
 
-  light7.changeColor();
-  light7.element.style.top = '36.5vw';
-  light7.element.style.left = '46vw';
-  light8.changeColor();
-  light8.element.style.top = '38.5vw';
-  light8.element.style.left = '54vw';
-  light9.changeColor();
-  light9.element.style.top = '40.5vw';
-  light9.element.style.left = '62vw';
-  light10.changeColor();
-  light10.element.style.top = '43vw';
-  light10.element.style.left = '69vw';
-  // light11.changeColor();
-  // light11.element.style.top = '40vw';
-  //  light11.element.style.left = '72vw';
-
-  light12.changeColor();
-  light12.element.style.top = '46vw';
-  light12.element.style.left = '63vw';
-  light13.changeColor();
-  light13.element.style.top = '48.5vw';
-  light13.element.style.left = '56vw';
-  light14.changeColor();
-  light14.element.style.top = '50.5vw';
-  light14.element.style.left = '49vw';
-  light15.changeColor();
-  light15.element.style.top = '52.5vw';
-  light15.element.style.left = '42vw';
-  light16.changeColor();
-  light16.element.style.top = '54.5vw';
-  light16.element.style.left = '34.5vw';
-  light17.changeColor();
-  light17.element.style.top = '56.5vw';
-  light17.element.style.left = '28vw';
-
-  light18.changeColor();
-  light18.element.style.top = '16.5vw';
-  light18.element.style.left = '50vw';
-  light19.changeColor();
-  light19.element.style.top = '15vw';
-  light19.element.style.left = '56.5vw';
-
-  light20.changeColor();
-  light20.element.style.top = '60vw';
-  light20.element.style.left = '34.5vw';
-  light21.changeColor();
-  light21.element.style.top = '62vw';
-  light21.element.style.left = '41.5vw';
-  light22.changeColor();
-  light22.element.style.top = '63.5vw';
-  light22.element.style.left = '48.5vw';
-  light23.changeColor();
-  light23.element.style.top = '65vw';
-  light23.element.style.left = '55.5vw';
-  light24.changeColor();
-  light24.element.style.top = '67vw';
-  light24.element.style.left = '62.5vw';
-  light25.changeColor();
-  light25.element.style.top = '69vw';
-  light25.element.style.left = '69.5vw';
-  light26.changeColor();
-  light26.element.style.top = '71vw';
-  light26.element.style.left = '76.5vw';
 }
-
-
 
 	</script>
 	</body>
