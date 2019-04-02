@@ -1,0 +1,371 @@
+<!doctype html>
+<html>
+<div id="info">WEB3D HW2
+  <br>
+  <button id = "toggle"style="width:20%">toggle</button>
+  <button id="tView" style="width:20%">Toggle Turn</button>
+  <input type=range min=0 max=1 step=0.1 id='intensity'> intensity <br>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+</script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+
+	<script>
+var scene, renderer, camera;
+var camera1;
+var lightsOff = false;
+var cameraObj;
+var safety = false;
+var keys = [
+  [0, 0], [0.4, 0.6], [0.5, 0.6], [0.9, 0], [1, 0]
+];
+var T = 2;
+var clock = new THREE.Clock();
+var ts = clock.getElapsedTime();
+
+class Paint{
+	constructor(fileName,width,height){
+  	let loader = new THREE.TextureLoader();
+    loader.crossOrigin = '';
+    this.body = new THREE.Object3D();
+    
+    let self = this;
+    loader.load('./p/'+fileName,function(mat){
+    	let paint = new THREE.Mesh(new THREE.PlaneGeometry(width,height),
+      	new THREE.MeshBasicMaterial({map: mat, side: THREE.DoubleSide}));
+      self.body.add(paint);
+    },undefined,
+    function(error){
+    	console.log(error);
+    });
+    
+    scene.add(this.body);
+  }
+}
+
+$('#intensity').change(function() {
+  console.log($(this).val());
+  light.intensity = $(this).val();
+})
+
+$('#tView').click(function() {
+  //  toggleCamera();
+  lightsOff = !lightsOff;
+
+  if (lightsOff) {
+    light.intensity = 0;
+    light2.intensity = 0;
+  } else {
+    light.intensity = .5;
+    light2.intensity = .5;
+  }
+});
+
+function Createbench() {
+  var bench = new THREE.Object3D();
+  var mat = new THREE.MeshPhongMaterial({
+    color: 0xE69966
+  });
+  var body = new THREE.Mesh(new THREE.BoxGeometry(140, 6, 50), mat);
+  var f1 = new THREE.Mesh(new THREE.BoxGeometry(10, 30, 10), mat);
+  var f2 = new THREE.Mesh(new THREE.BoxGeometry(10, 30, 10), mat);
+  var f3 = new THREE.Mesh(new THREE.BoxGeometry(10, 30, 10), mat);
+  var f4 = new THREE.Mesh(new THREE.BoxGeometry(10, 30, 10), mat);
+  bench.add(body);
+  bench.add(f1, f2, f3, f4);
+  body.position.set(-60, 30, 0);
+  f1.position.set(-125, 15, 20);
+  f2.position.set(-125, 15, -20);
+  f3.position.set(5, 15, 20);
+  f4.position.set(5, 15, -20);
+  
+  bench.traverse((e) => {
+  	if(e instanceof THREE.Mesh){
+    	e.castShadow = true;
+      e.receiveShadow = true;
+    }
+  })
+  
+  return bench;
+}
+
+function Createlight(x, y, z) {
+  var lighta = new THREE.Object3D();
+  var mat = new THREE.MeshBasicMaterial({
+    color: 0xffffff
+  });
+  var body = new THREE.Mesh(new THREE.CylinderGeometry(4, 8, 15, 30), mat);
+  lighta.add(body);
+  lighta.position.set(x, y, z);
+
+  var light = new THREE.PointLight(0xffffff, 0.5, 300);
+  light.position.set(0, -10, 0);
+  lighta.add(light);
+
+  return lighta;
+}
+
+
+init();
+animate();
+
+$("#toggle").click(function() {
+	safety = !safety;
+});
+
+function init() {
+  scene = new THREE.Scene();
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  
+  document.body.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+  camera.position.z = 1200;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  var gridXZ = new THREE.GridHelper(600, 40, 'red', 'white');
+  //scene.add(gridXZ);
+  window.addEventListener('resize', onWindowResize, false);
+
+  light = new THREE.PointLight(0xffffff,0.5);
+  light.position.set(0, 300, 0);
+  light.castShadow = true;
+  scene.add(light);
+  light.shadow.mapSize.width = 512; // default
+  light.shadow.mapSize.height = 512; // default
+  light.shadow.camera.near = 0.5; // default
+  light.shadow.camera.far = 500 // default
+ // scene.add(new THREE.CameraHelper(light.shadow.camera));
+
+  //////////////////////////////////////////////////////////////
+
+  let wall = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall);
+  wall.position.set(-130, 45, 230);
+  wall.rotation.y = Math.PI / 10;
+  let wall1 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 600), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall1);
+  wall1.position.set(0, 45, -295);
+  wall1.rotation.y = Math.PI / 2;
+  let wall2 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 600), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall2);
+  wall2.position.set(295, 45, 0);
+  let wall3 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 600), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall3);
+  wall3.position.set(-295, 45, 0);
+  let wall4 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 400), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall4);
+  wall4.position.set(90, 45, 295);
+  wall4.rotation.y = Math.PI / 2;
+  let wall5 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall5);
+  wall5.position.set(80, 45, -230);
+  wall5.rotation.y = Math.PI / 8;
+  let wall6 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall6);
+  wall6.position.set(-100, 45, -230);
+  wall6.rotation.y = Math.PI / 8;
+  let wall7 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
+    color: 0x999999
+  }));
+  scene.add(wall7);
+  wall7.position.set(80, 45, 230);
+  wall7.rotation.y = Math.PI / 8;
+  ////////////////////////////////////////////////////////////////////
+
+  let loader = new THREE.TextureLoader();
+  loader.crossOrigin = '';
+  texture = loader.load('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqkLveSBybwJvGFVQjVlMlc6_7rLaMSF1IPt0HStA-EhSD4DGo');
+  texture.repeat.set(2, 2);
+  texture.wrapS = texture.wrapT = true;
+  let floor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshPhongMaterial({
+    side: THREE.DoubleSide,
+    map: texture
+  }))
+  scene.add(floor);
+  floor.receiveShadow = true;
+  floor.rotation.x = -Math.PI / 2
+  ///////////////////////////////////////////////////////////////////////
+  
+  let paint = new Paint('v1.jpg',80,58);
+  paint.body.position.set(-210,45,-283);
+  let paint1a = new Paint('v2.jpg',80,58);
+  paint1a.body.position.set(-288,40,-243);
+  paint1a.body.position.set(-288,40,-243);
+  paint1a.body.rotation.y=-Math.PI / 2;
+  let paint1b = new Paint('v3.jpg',80,58);
+  paint1b.body.position.set(-107,45,-224);
+  paint1b.body.rotation.y=-Math.PI / 2.8;
+  
+  let paint2 = new Paint('j1.jpg',80,58);
+  paint2.body.position.set(-10,45,-283);
+  let paint2a = new Paint('j2.jpg',80,58);
+  paint2a.body.position.set(-89,45,-224);
+  paint2a.body.rotation.y=-Math.PI / 2.8;
+  let paint2b = new Paint('j3.jpg',80,58);
+  paint2b.body.position.set(70,45,-224);
+  paint2b.body.rotation.y=-Math.PI / 2.8;
+  
+  let paint3 = new Paint('d1.jpg',80,58);
+  paint3.body.position.set(210,45,-283);
+  let paint3a = new Paint('d2.jpg',80,58);
+  paint3a.body.position.set(92,45,-224);
+  paint3a.body.rotation.y=-Math.PI / 2.8;
+  let paint3b = new Paint('d3.jpg',80,58);
+  paint3b.body.position.set(288,45,-224);
+ paint3b.body.rotation.y = -Math.PI / 2;
+  
+  let paint4 = new Paint('r1.jpg',80,58);
+  paint4.body.position.set(-10,45,283);
+   let paint4a = new Paint('r2.jpg',80,58);
+   paint4a.body.position.set(85,45,224);
+  paint4a.body.rotation.y=-Math.PI / 2.8;
+  let paint4b = new Paint('r3.jpg',80,58);
+  paint4b.body.position.set(288,45,224);
+ paint4b.body.rotation.y = -Math.PI / 2;
+ 
+ 
+  let paint5 = new Paint('dvv1.jpg',80,58);
+  paint5.body.position.set(210,45,283);
+    let paint5a = new Paint('j2.jpg',80,58);
+  paint5a.body.position.set(-124,45,224);
+  paint5a.body.rotation.y=-Math.PI / 2.5;
+  let paint5b = new Paint('j3.jpg',80,58);
+  paint5b.body.position.set(70,45,224);
+  paint5b.body.rotation.y=-Math.PI / 2.8;
+  /////////////////////////////////////////////////////////////////////////////
+  let logo = new Paint('logo1.png',30,24);
+  logo.body.position.set(-288,45,253);
+  logo.body.rotation.y = -Math.PI / 2;
+  let logo2 = new Paint('logo2.jpg',30,24);
+  logo2.body.position.set(-288,45,203);
+   logo2.body.rotation.y = -Math.PI / 2;
+  let logo3 = new Paint('logo3.jpg',30,24);
+  logo3.body.position.set(-288,45,153);
+   logo3.body.rotation.y = -Math.PI / 2;
+  //////////////////////////////////////////////////////////////////////////
+  bench = Createbench();
+  bench2 = Createbench();
+  scene.add(bench, bench2);
+  bench2.position.set(180, 0, 0);
+
+  //////////////////////////////////////////////////////////////////////////
+
+  var lights = [];
+  lightsData = [{
+    x: -210,
+    y: 90,
+    z: -260
+  }, {
+    x: 210,
+    y: 90,
+    z: 260
+  }, {
+    x: 210,
+    y: 90,
+    z: -260
+  }, {
+    x: -10,
+    y: 90,
+    z: 260
+  }, {
+    x: -10,
+    y: 90,
+    z: -260
+  }];
+
+  lightsData.forEach(function(e) {
+    let tmp = Createlight(e.x, e.y, e.z);
+    lights.push(tmp);
+    scene.add(tmp);
+  })
+////////////////////////////////////////////////////////////////////////
+  sCam = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+    
+  cameraObj = new THREE.Object3D();
+  cameraBody = new THREE.Mesh (new THREE.BoxGeometry (20,12,5), new THREE.MeshPhongMaterial());
+  lens = new THREE.Mesh (new THREE.CylinderGeometry (5,5,10), new THREE.MeshPhongMaterial());
+  lens.position.z = -5;
+  lens.rotation.x = Math.PI/2;
+  cameraObj.add (cameraBody, lens);
+	
+
+  cameraCase = new THREE.Object3D();
+  cameraCase.add (cameraObj);
+	cameraCase.position.set (-280, 100, -280);
+  scene.add (cameraCase);
+
+  cameraCase.rotation.y = -Math.PI/1.4;
+  cameraCase.rotation.x = -Math.PI/7;
+
+  cameraCase.rotation.order = 'YXZ'
+
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+function keyframe(t) {
+  var s = ((t - ts) % T) / T;
+  //console.log(s);
+
+  for (var i = 1; i < keys.length; i++) {
+    if (keys[i][0] > s) break;
+  }
+  // take i-1
+  var ii = i - 1;
+  console.log (ii)
+  var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
+  intKey = keys[ii][1] * (1 - a) + keys[ii + 1][1] * a;
+  //console.log (a)
+	return intKey;
+  //console.log (intKey);  // array linear combo?!
+}
+
+function animate() {
+
+  let intkey = keyframe(clock.getElapsedTime());
+
+	cameraObj.rotation.y = intkey - 0.2;
+  requestAnimationFrame(animate);
+
+	sCam.matrixWorld.copy (cameraObj.matrixWorld);
+  sCam.matrixAutoUpdate = false;
+  
+  let cam = safety ? sCam : camera;
+  
+	renderer.render(scene, cam);
+}
+
+
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+	</script>
+	</body>
+</html>
