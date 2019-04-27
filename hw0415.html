@@ -1,17 +1,63 @@
 <!doctype html>
 <html>
-<div id="info">WEB3D HW2
-  <br>
-  <button id = "toggle"style="width:20%">toggle</button>
-  <button id="tView" style="width:20%">Toggle Turn</button>
-  <input type=range min=0 max=1 step=0.1 id='intensity'> intensity <br>
+<meta HTTP-EQUIV="content-Type" content="text/html; charset=utf-8" >
+<h2 style="font-size:2em; text-align:center; margin:9px"> 
+歐洲著名畫家
+</h2>
 
+<hr>
+  <br>
+  <button id="tView" style="width:20% height:20%">Toggle Turn</button>
+  <input type=range min=0 max=1 step=0.1 id='intensity'> intensity <br>
+<style>
+#container {
+  width: 60vw;
+  height: 45vw;
+  float: left;
+  background-color: black;
+  margin: 10px;
+}
+
+p {
+  margin: 10px;
+  text-align: justify;
+}
+
+</style>
+<div id="container">
+
+</div>
+<div id="camera1" onclick="clickCamera1()" style="position:relative;top:10px;left:20px;background:black width:40vw; height:30vh;float:left;overflow:hidden">
+<canvas id="mycanvas3"></canvas></div>
+<br><br><br><br><br><br><br><br><br><br><br>
+<div style="background:white; margin-left:5%;width:90%">
+<p><h2>
+1Vincent van Gogh</h2>
+<hr>
+Vincent Willem van Gogh (30 March 1853 – 29 July 1890) was a Dutch post-impressionist painter who is among the most famous and influential figures in the history of Western art. In just over a decade he created about 2,100 artworks, including around 860 oil paintings, most of them in the last two years of his life. They include landscapes, still lifes, portraits and self-portraits, and are characterised by bold colours and dramatic, impulsive and expressive brushwork that contributed to the foundations of modern art. However, he was not commercially successful, and his suicide at 37 followed years of mental illness and poverty. 
+<hr><h2>
+2Johannes Vermeer</h2>
+<hr>
+Johannes Vermeer (October 1632 – December 1675) was a Dutch Baroque Period painter who specialized in domestic interior scenes of middle-class life. He was a moderately successful provincial genre painter in his lifetime but evidently was not wealthy, leaving his wife and children in debt at his death, perhaps because he produced relatively few paintings.
+<hr>
+<h2>3 Leonardo da Vinci
+</h2><hr>
+Leonardo di ser Piero da Vinci (15 April 1452 – 2 May 1519), more commonly Leonardo da Vinci or simply Leonardo, was an Italian polymath of the Renaissance whose areas of interest included invention, drawing, painting, sculpting, architecture, science, music, mathematics, engineering, literature, anatomy, geology, astronomy, botany, writing, history, and cartography. He has been variously called the father of palaeontology, ichnology,and architecture, and he is widely considered one of the greatest painters of all time. Sometimes credited with the inventions of the parachute, helicopter, and tank,he epitomised the Renaissance humanist ideal.
+<hr>
+<h2>4Diego Velázquez
+</h2><hr>
+Diego Rodríguez de Silva y Velázquez(baptized June 6, 1599 – August 6, 1660) was a Spanish painter, the leading artist in the court of King Philip IV, and one of the most important painters of the Spanish Golden Age. He was an individualistic artist of the contemporary Baroque period. In addition to numerous renditions of scenes of historical and cultural significance, he painted scores of portraits of the Spanish royal family, other notable European figures, and commoners, culminating in the production of his masterpiece Las Meninas (1656).
+<hr>
+<h2>5 Rembrandt
+</h2><hr>
+Rembrandt Harmenszoon van Rijn (July 15, 1606 – October 4, 1669) was a Dutch draughtsman, painter and printmaker. An innovative and prolific master in three media,he is generally considered one of the greatest visual artists in the history of art and the most important in Dutch art history.Unlike most Dutch masters of the 17th century, Rembrandt's works depict a wide range of style and subject matter, from portraits and self-portraits to landscapes, genre scenes, allegorical and historical scenes, biblical and mythological themes as well as animal studies. His contributions to art came in a period of great wealth and cultural achievement that historians call the Dutch Golden Age, when Dutch art (especially Dutch painting), although in many ways antithetical to the Baroque style that dominated Europe, was extremely prolific and innovative, and gave rise to important new genres. Like many artists of the Dutch Golden Age, such as Jan Vermeer of Delft, Rembrandt was also an avid art collector and dealer.
+
+</p>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
 <script src="https://threejs.org/examples/js/controls/OrbitControls.js">
 </script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-
 
 	<script>
 var scene, renderer, camera;
@@ -25,14 +71,18 @@ var keys = [
 var T = 2;
 var clock = new THREE.Clock();
 var ts = clock.getElapsedTime();
+var mouse = new THREE.Vector2();
+var raycaster = new THREE.Raycaster();
+var pickables = [];
 
 class Paint{
 	constructor(fileName,width,height){
+
   	let loader = new THREE.TextureLoader();
     loader.crossOrigin = '';
     this.body = new THREE.Object3D();
-    
     let self = this;
+
     loader.load('./p/'+fileName,function(mat){
     	let paint = new THREE.Mesh(new THREE.PlaneGeometry(width,height),
       	new THREE.MeshBasicMaterial({map: mat, side: THREE.DoubleSide}));
@@ -41,11 +91,10 @@ class Paint{
     function(error){
     	console.log(error);
     });
-    
+
     scene.add(this.body);
   }
 }
-
 $('#intensity').change(function() {
   console.log($(this).val());
   light.intensity = $(this).val();
@@ -130,22 +179,37 @@ $("#toggle").click(function() {
 });
 
 function init() {
+  renderer = new THREE.WebGLRenderer({
+  antialias: true
+  });
+  var ww = $('#container').innerWidth();
+  var hh = $('#container').innerHeight();
+   renderer.setSize(ww, hh);
+   
+  var ww2 = $('#camera1').innerWidth();
+  var hh2 = $('#camera1').innerHeight();
+  var cc2 = document.getElementById('mycanvas3');
+       renderer2 = new THREE.WebGLRenderer({
+            canvas: cc2
+        });
+  renderer2.setSize(ww2, hh2);
+  renderer.setClearColor(0x555555);
+  $('#container').append(renderer.domElement);
   scene = new THREE.Scene();
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x000000);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  
-  document.body.appendChild(renderer.domElement);
 
-  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+  camera = new THREE.PerspectiveCamera(45, ww / hh, 1, 10000);
+  camera.position.y = 80;
   camera.position.z = 1200;
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-  var gridXZ = new THREE.GridHelper(600, 40, 'red', 'white');
-  //scene.add(gridXZ);
+	let controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+//  scene.add(gridXZ);
+
   window.addEventListener('resize', onWindowResize, false);
+  //$('#container').on ("mousemove", onDocumentMouseMove);
+  window.addEventListener('mousedown', onDocumentMouseDown, false);
+
 
   light = new THREE.PointLight(0xffffff,0.5);
   light.position.set(0, 300, 0);
@@ -160,47 +224,47 @@ function init() {
   //////////////////////////////////////////////////////////////
 
   let wall = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall);
   wall.position.set(-130, 45, 230);
   wall.rotation.y = Math.PI / 10;
   let wall1 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 600), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall1);
   wall1.position.set(0, 45, -295);
   wall1.rotation.y = Math.PI / 2;
   let wall2 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 600), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall2);
   wall2.position.set(295, 45, 0);
   let wall3 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 600), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall3);
   wall3.position.set(-295, 45, 0);
   let wall4 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 400), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall4);
   wall4.position.set(90, 45, 295);
   wall4.rotation.y = Math.PI / 2;
   let wall5 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall5);
   wall5.position.set(80, 45, -230);
   wall5.rotation.y = Math.PI / 8;
   let wall6 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall6);
   wall6.position.set(-100, 45, -230);
   wall6.rotation.y = Math.PI / 8;
   let wall7 = new THREE.Mesh(new THREE.BoxGeometry(10, 90, 140), new THREE.MeshBasicMaterial({
-    color: 0xffffff
+    color: 0x666666
   }));
   scene.add(wall7);
   wall7.position.set(80, 45, 230);
@@ -226,9 +290,10 @@ function init() {
   scene.add(box);
   box.position.set(-210, 45, -288);
   box.rotation.y=Math.PI/2;
-  let paint = new Paint('v1.jpg',80,58);
-  paint.body.position.set(-210,45,-284);
-  
+  let painting = new Paint('v1.jpg',80,58);
+  painting.body.position.set(-210,45,-284);
+  box.name='Vincent van Gogh';
+
   let box2= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
   }));
@@ -237,6 +302,7 @@ function init() {
   let paint1a = new Paint('v2.jpg',80,58);
   paint1a.body.position.set(-284,40,-225);
   paint1a.body.rotation.y=-Math.PI / 2;
+  box2.name='Starry Night Over the Rhône';
   
   let box3= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 87.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -247,6 +313,7 @@ function init() {
   let paint1b = new Paint('v3.jpg',80,58);
   paint1b.body.position.set(-109,45,-223);
   paint1b.body.rotation.y=-Math.PI / 2.7;
+  box3.name='The Starry Night';
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
   let box4= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -256,6 +323,7 @@ function init() {
   box4.rotation.y=Math.PI/2;
   let paint2 = new Paint('j1.jpg',80,58);
   paint2.body.position.set(-10,45,-283);
+  box4.name='Johannes Vermeer';
   
   let box5= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -266,6 +334,7 @@ function init() {
   let paint2a = new Paint('j2.jpg',80,58);
   paint2a.body.position.set(-85,45,-224);
   paint2a.body.rotation.y=-Math.PI / 2.8;
+  box5.name='The Milkmaid';
   
   let box6= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 87.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -276,6 +345,7 @@ function init() {
   let paint2b = new Paint('j3.jpg',80,58);
   paint2b.body.position.set(68,45,-224);
   paint2b.body.rotation.y=-Math.PI / 2.7;
+  box6.name=' Officer and a Laughing Girl';
   ////////////////////////////////////////////////////////////////////////////////////////
   let box7= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -285,7 +355,7 @@ function init() {
   box7.rotation.y=Math.PI/2; 
   let paint3 = new Paint('d1.jpg',80,58);
   paint3.body.position.set(210,45,-284);
-
+  box7.name = 'Leonardo da Vinci';
  let box8= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
   }));
@@ -295,7 +365,7 @@ function init() {
   let paint3a = new Paint('d2.jpg',80,58);
   paint3a.body.position.set(96,45,-224);
   paint3a.body.rotation.y=-Math.PI / 2.7;
- 
+  box8.name = 'Mona Lisa';
   let box9= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
   }));
@@ -304,6 +374,7 @@ function init() {
   let paint3b = new Paint('d3.jpg',80,58);
   paint3b.body.position.set(284,45,-224);
   paint3b.body.rotation.y = -Math.PI / 2;
+  box9.name = 'The last Supper';
   //////////////////////////////////////////////////////////////////////////////////////////////////
   let box10= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -313,7 +384,7 @@ function init() {
   box10.rotation.y=Math.PI/2;
   let paint4 = new Paint('r1.jpg',80,58);
   paint4.body.position.set(-10,45,284);
- 
+  box10.name = 'Rembrandt';
   
   let box11= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
@@ -324,13 +395,13 @@ function init() {
   let paint4a = new Paint('r2.jpg',80,58);
   paint4a.body.position.set(90,45,224);
   paint4a.body.rotation.y=-Math.PI / 2.6;
-   
+    box11.name = 'De anatomische les van Dr. Nicolaes Tulp';
   let box12= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
   }));
   scene.add(box12);
   box12.position.set(288, 45, 224);
-  
+   box12.name = 'Night Watch';
   let paint4b = new Paint('r3.jpg',80,58);
   paint4b.body.position.set(284,45,224);
   paint4b.body.rotation.y = -Math.PI / 2;
@@ -342,16 +413,17 @@ function init() {
   scene.add(box13);
   box13.position.set(210, 45, 288);
   box13.rotation.y=Math.PI/2;
+  box13.name = 'Diego Velázquez';
   let paint5 = new Paint('dvv1.jpg',80,58);
   paint5.body.position.set(210,45,284);
-  
   let box14= new THREE.Mesh(new THREE.BoxGeometry(4,63.4, 85.7), new THREE.MeshBasicMaterial({
     color: 0x999999
   }));
   scene.add(box14);
   box14.position.set(-124, 45, 224);
-   box14.rotation.y=Math.PI/9;
-  let paint5a = new Paint('j2.jpg',80,58);
+  box14.rotation.y=Math.PI/9;
+  box14.name = 'Las Meninas Del Dorset';
+  let paint5a = new Paint('dvv2.jpg',80,58);
   paint5a.body.position.set(-119,45,224);
   paint5a.body.rotation.y=-Math.PI / 2.6;
   
@@ -361,9 +433,11 @@ function init() {
   scene.add(box15);
   box15.position.set(70, 45, 224);
   box15.rotation.y=Math.PI/9;
-  let paint5b = new Paint('j3.jpg',80,58);
+  let paint5b = new Paint('dvv3.jpg',80,58);
   paint5b.body.position.set(66,45,224);
   paint5b.body.rotation.y=-Math.PI / 2.6;
+   box15.name = 'The Spinners';
+  pickables.push (box,box2,box3,box4,box5,box6,box7,box8,box9,box10,box11,box12,box13,box14,box15);
   /////////////////////////////////////////////////////////////////////////////
   let logo = new Paint('logo1.png',30,24);
   logo.body.position.set(-288,45,253);
@@ -417,33 +491,59 @@ function init() {
     scene.add(tmpb);
   })
 ////////////////////////////////////////////////////////////////////////
-  sCam = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
-    
+  sCam = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 20, 1000);
   cameraObj = new THREE.Object3D();
-  cameraBody = new THREE.Mesh (new THREE.BoxGeometry (20,12,5), new THREE.MeshPhongMaterial());
-  lens = new THREE.Mesh (new THREE.CylinderGeometry (5,5,10), new THREE.MeshPhongMaterial());
-  lens.position.z = -5;
+  cameraBody = new THREE.Mesh (new THREE.BoxGeometry (10,10,20), new THREE.MeshPhongMaterial());
+  lens = new THREE.Mesh (new THREE.CylinderGeometry (5,5,6), new THREE.MeshPhongMaterial());
+  lens.position.z = -15;
   lens.rotation.x = Math.PI/2;
   cameraObj.add (cameraBody, lens);
-	
-
   cameraCase = new THREE.Object3D();
   cameraCase.add (cameraObj);
-	cameraCase.position.set (-280, 100, -280);
+  cameraCase.position.set (-280, 100, -280);
   scene.add (cameraCase);
-
   cameraCase.rotation.y = -Math.PI/1.4;
   cameraCase.rotation.x = -Math.PI/7;
-
   cameraCase.rotation.order = 'YXZ'
-
+  ////////////////////////////////////////////////////////////////////////
+  sCam2 = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 20, 1000);
+  cameraObj2 = new THREE.Object3D();
+  cameraBody2 = new THREE.Mesh (new THREE.BoxGeometry (10,10,20), new THREE.MeshPhongMaterial());
+  lens2 = new THREE.Mesh (new THREE.CylinderGeometry (5,5,6), new THREE.MeshPhongMaterial());
+  lens2.position.z = -5;
+  lens2.rotation.x = Math.PI/2;
+  cameraObj2.add (cameraBody2, lens2);
+  cameraCase2 = new THREE.Object3D();
+  cameraCase2.add (cameraObj2);
+  cameraCase2.position.set (280, 100, 280);
+  scene.add (cameraCase2);
+  cameraCase2.rotation.y = -Math.PI/1.4;
+  cameraCase2.rotation.x = -Math.PI/7;
+  cameraCase2.rotation.order = 'YXZ'
 }
 
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  var ww = $('#container').innerWidth();
+  var hh = $('#container').innerHeight();
+  camera.aspect = ww / hh;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(ww, hh);
 }
+
+function onDocumentMouseDown(event) {
+  var viewportPos =$('#container').get(0).getBoundingClientRect(); 
+	mouse.x = ((event.clientX - viewportPos.left) / $('#container').innerWidth()) * 2 - 1;
+	mouse.y = -((event.clientY - viewportPos.top) / $('#container').innerHeight()) * 2 + 1;
+
+	raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects (pickables);
+  if (intersects.length > 0) {
+    //cyl.position.copy(intersects[0].point);
+    alert (intersects[0].object.name + " is picked!")
+  }
+}
+
+
 function keyframe(t) {
   var s = ((t - ts) % T) / T;
   //console.log(s);
@@ -465,15 +565,17 @@ function animate() {
 
   let intkey = keyframe(clock.getElapsedTime());
 
-	cameraObj.rotation.y = intkey - 0.2;
+  cameraObj.rotation.y = intkey - 0.2;
   requestAnimationFrame(animate);
 
-	sCam.matrixWorld.copy (cameraObj.matrixWorld);
+  sCam.matrixWorld.copy (cameraObj.matrixWorld);
   sCam.matrixAutoUpdate = false;
-  
+
   let cam = safety ? sCam : camera;
   
 	renderer.render(scene, cam);
+	renderer2.render(scene, sCam);
+
 }
 
 
@@ -481,7 +583,6 @@ function animate() {
 function render() {
   renderer.render(scene, camera);
 }
-
 	</script>
 	</body>
 </html>
