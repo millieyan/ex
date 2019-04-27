@@ -506,20 +506,7 @@ function init() {
   cameraCase.rotation.x = -Math.PI/7;
   cameraCase.rotation.order = 'YXZ'
   ////////////////////////////////////////////////////////////////////////
-  sCam2 = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 20, 1000);
-  cameraObj2 = new THREE.Object3D();
-  cameraBody2 = new THREE.Mesh (new THREE.BoxGeometry (10,10,20), new THREE.MeshPhongMaterial());
-  lens2 = new THREE.Mesh (new THREE.CylinderGeometry (5,5,6), new THREE.MeshPhongMaterial());
-  lens2.position.z = -5;
-  lens2.rotation.x = Math.PI/2;
-  cameraObj2.add (cameraBody2, lens2);
-  cameraCase2 = new THREE.Object3D();
-  cameraCase2.add (cameraObj2);
-  cameraCase2.position.set (280, 100, 280);
-  scene.add (cameraCase2);
-  cameraCase2.rotation.y = -Math.PI/1.4;
-  cameraCase2.rotation.x = -Math.PI/7;
-  cameraCase2.rotation.order = 'YXZ'
+
 }
 
 function onWindowResize() {
