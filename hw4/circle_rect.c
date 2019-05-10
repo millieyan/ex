@@ -1,7 +1,5 @@
 #include "GraphicsGems.h"
 #include <stdio.h>
-#include <stdlib.h>
-
 boolean Check_Intersect( Box2 *R,  Point2 *C,  double Rad)
 {
  double Rad2;
@@ -33,7 +31,7 @@ boolean Check_Intersect( Box2 *R,  Point2 *C,  double Rad)
    	else 				/* R contains circle centerpoint */
      		return(TRUE);
 } 	
-int main(int argc,char * argv[]){
+int main(int argc,char * argc[]){
 	Point2 C;
 	Box2 R;
 	C.x=atof(argv[1]);
@@ -42,7 +40,7 @@ int main(int argc,char * argv[]){
 	R.max.y=atof(argv[4]);
 	R.min.x=atof(argv[5]);
 	R.min.y=atof(argv[6]);
-	double Rad=atof(argv[7]);
+	doulbe Rad=atof(argv[7]);
 	
 	if ( argc != 8 ) {
 		printf ("0");
@@ -50,7 +48,6 @@ int main(int argc,char * argv[]){
     }else {
 		boolean judge=Check_Intersect(&R,&C,Rad);
 		printf ("%d\n",judge);
-          //printf("22222");		
-	}
 		exit(0);
     }
+}
