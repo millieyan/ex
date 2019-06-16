@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<style>
+	#info {
+		position: absolute;
+		top: 100px; width: 100%;
+		color: #ffff00;
+		text-align: center;
+	}
+	#deviceInfo {
+		position: absolute;
+		bottom: 100px; width: 100%;
+		color: #ffffff;
+		text-align: center;
+	}
+</style>
+</head>
+
+<body> 
+	<div id='info'> HW6 </div>
+	<div id='deviceInfo'></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+
+	<script>
+
+	var camera, scene, renderer, light;
+	var ball, plane,loader,hole;
+	var clock = new THREE.Clock();
+	var mouse = new THREE.Vector2();
+	var gravity = new THREE.Vector3();
+	var deviceInfo, gamma = 0, beta = 0;
+
+	class Ball{
+		constructor(a,b) {
+		this.pos = new THREE.Vector3(a, 0, b);
+		this.vel = new THREE.Vector3();
+		this.force = new THREE.Vector3();
+		this.mesh = new THREE.Mesh(new THREE.SphereGeometry(5, 32, 32), new THREE.MeshPhongMaterial({
+			color: 0xffd700,
+			specular: 0x444444,
+			shininess: 80
+		}));
+		scene.add(this.mesh);
+	}
+  
+	update(dt) {
+        this.vel.add(this.force.clone().multiplyScalar(dt));
+        this.pos.add(this.vel.clone().multiplyScalar(dt));
+        this.mesh.position.copy(this.pos);
+		
+		//外牆
+        if (this.pos.x > 90) {
+            this.pos.setX (90);
+            this.vel.setX (0);
+        } else if (this.pos.x < -90) {
+            this.pos.setX (-90);
+            this.vel.setX (0);
+        }
+        if (this.pos.z > 90) {
+            this.pos.setZ (90);
+            this.vel.setZ (0);
+        } else if (this.pos.z < -90) {
+            this.pos.setZ (-90);
+            this.vel.setZ (0);
+        }
+		
+        //障礙物
+		if (this.pos.x <= 7.5 && this.pos.x >= -7.5) {
+						if(this.pos.x > 0 && this.pos.z >= -5){
+							this.pos.setX(7.5);
+							this.vel.setX(0);
+						}
+						
+						if(this.pos.x < 0 && this.pos.z >= -5) {
+							this.pos.setX(-7.5);
+							this.vel.setX(0);
+						}
+					}
+			if (this.pos.x <= 67.5 && this.pos.x >= 77.5) {
+						if( this.pos.z >= 50){
+							this.pos.setX(72.5);
+							this.vel.setX(0);
+						}
+						
+						if( this.pos.z <= 50.5) {
+							this.pos.setX(-72.5);
+							this.vel.setX(0);
+						}
+					}		
+    }
+}
+	var Plane = function () {
+    this.pos = new THREE.Vector3(0, 10, 0); 
+    this.normal = new THREE.Vector3(0, 1, 0); 
+    this.mesh = new THREE.Mesh(new THREE.BoxGeometry(500, 20, 500), new THREE.MeshLambertMaterial({
+        transparent: true,
+        opacity: 0.5
+    }));
+    scene.add(this.mesh);
+    this.isPointOut = function (point) {
+  
+        var posW = this.pos.clone(); 
+        var normalW = this.normal.clone();
+        posW.applyMatrix4(this.mesh.matrixWorld);
+        var tt = new THREE.Matrix4();
+        normalW.applyMatrix4(tt.getInverse(this.mesh.matrixWorld).transpose());
+        return true; 
+		}
+	};
+
+	function Hole(){
+				var meshpit = new THREE.MeshPhongMaterial({
+						color: 0x000000,
+						specular: 0x444444,
+						shininess: 80
+					})
+				var hole1 = new THREE.Mesh(new THREE.SphereGeometry (7,32,32,6,6.3,4,3), meshpit);
+				hole1.position.x = 89;
+				hole1.position.z = 89;
+				hole1.rotation.x = Math.PI;
+				scene.add(hole1);
+				
+				var hole2 = new THREE.Mesh(new THREE.SphereGeometry (7,32,32,6,6.3,4,3), meshpit);
+				hole2.position.x = 89;
+				hole2.position.z = -89;
+				hole2.rotation.x = Math.PI;
+				scene.add(hole2);
+				
+						
+			}
+			
+init();
+animate();
+function init() {
+	
+    scene = new THREE.Scene();
+    camera = new THREE.OrthographicCamera(-110, 110, 110, -110, 10, 2000);
+    camera.position.set(0, 450, 0);
+    camera.up.set(0, 0, -1);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    scene.add(camera);
+    ball = new Ball(-85,-85);
+    light = new THREE.PointLight(0xffffff);
+    light.position.set(0, 300, 0);
+    scene.add(light);
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x888888);
+    var gridXZ = new THREE.GridHelper(200, 10, 'red', 'white');
+    //scene.add(gridXZ);
+   // scene.add (new THREE.AxisHelper (30))
+    document.body.appendChild(renderer.domElement);
+    window.addEventListener('resize', onWindowResize, false);
+//    document.addEventListener('mousemove', onDocumentMouseMove, false);
+    deviceInfo = document.getElementById('deviceInfo');
+	window.addEventListener('deviceorientation', function(e) {
+		gamma = e.gamma;
+		beta = e.beta;
+		console.log (gamma +', ' + beta + ', ' + e.alpha);
+	});
+	
+		var loader = new THREE.TextureLoader();
+		loader.crossOrigin = '';
+		let plane, wall,wall2,wall3,wall4,wall5,wall6;
+		var texture = loader.load("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVh0h0YesiweR4FTsNvg0BJwnCWoxxEK-yiy6VWnOb7Jxo_hM9vA");
+		let floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshPhongMaterial({
+					side: THREE.DoubleSide,
+					map: texture
+				}));
+				scene.add(floor);
+				floor.rotation.x = -Math.PI / 2;
+				floor.position.y = -10;
+		var wallMaterial = new THREE.MeshLambertMaterial({
+		color: 0xf4a460,
+		opacity: 1,
+		transparent: true,
+
+		});
+
+			
+  
+  wall = new THREE.Mesh(new THREE.BoxGeometry(220, 30, 20), wallMaterial)
+  scene.add(wall)
+  wall.position.z = 105
+  wall.position.y = 15
+  
+  wall2 = new THREE.Mesh(new THREE.BoxGeometry(220, 30, 20), wallMaterial)
+  scene.add(wall2)
+  wall2.position.z = -105
+  wall2.position.y = 15
+
+  wall3 = new THREE.Mesh(new THREE.BoxGeometry(220, 30, 20), wallMaterial)
+  scene.add(wall3)
+  wall3.position.x = 105
+  wall3.position.y = 15
+  wall3.rotation.y = Math.PI / 2
+  
+  wall4 = new THREE.Mesh(new THREE.BoxGeometry(220, 30, 20), wallMaterial)
+  scene.add(wall4)
+  wall4.position.x = -105
+  wall4.position.y = 15
+  wall4.rotation.y = Math.PI / 2
+  
+  wall5 = new THREE.Mesh(new THREE.BoxGeometry(100, 10, 5), wallMaterial)
+  scene.add(wall5)
+  wall5.position.x = 0
+  wall5.position.y = 10
+  wall5.position.z = 50
+  wall5.rotation.y = Math.PI / 2
+  
+  wall6 = new THREE.Mesh(new THREE.BoxGeometry(100, 30, 5), wallMaterial)
+  scene.add(wall6)
+  wall6.position.x = 50
+  wall6.position.y = 15
+  wall6.position.z = -65
+  wall6.rotation.y = Math.PI / 2
+  
+
+
+ ////////////////////////////////////////////////////////////////////////// 
+ 
+	Hole();
+
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+function Contact(ball, plane) {
+    ball.pos.setY(0); // ball position correction
+    let normalW = new THREE.Vector3(0, 1, 0); // local plane normal
+ 	
+	ball.force.copy (gravity.projectOnPlane (normalW));
+}
+function animate() {
+
+	if(ball.pos.x >= -89 && ball.pos.x <= -81&& ball.pos.z >= -89 && ball.pos.z <=-81) {
+				ball.mesh.position.x = -85;
+				ball.mesh.position.y = 0;
+				ball.mesh.position.z = -85; 
+					}
+	var a = new THREE.Euler(-beta*Math.PI/180, 0, gamma*Math.PI/180, 'XYZ');
+    gravity = new THREE.Vector3(0, -180, 0);
+    gravity.applyEuler(a);
+	 
+    Contact(ball, plane);
+	let dt = clock.getDelta();
+    ball.update(dt);
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+</script>
+</body>
+
+</html>
