@@ -1,0 +1,17 @@
+<h1 style="text-align:center">Metronome</h1>
+<hr>
+<div id="container" style="float:left; margin:3px; width:30vw; height:60vw">
+</div>
+<div>
+tempo
+  <input type=range min=1  max=5 step="0.1" value =5 id='tem'>
+  </div>
+   <br>
+<button id="play" style="width:30%">Start/Pause</button>
+<audio id="soundtrack" autoplay loop style="display:none">
+<source src="https://jyunming-chen.github.io/WebAudio/metronome_click.wav" type='audio/mp3'>
+</audio>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
