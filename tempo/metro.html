@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+<div>
+<div style="text-align:center;">
+<h2>&nbsp;&nbsp;&nbsp;Metronome</h2><br>
+<button id="play40">40</button>
+<button id="play50">50</button>
+<button id="play60">60</button>
+<button id="play70">70</button>
+<button id="play80">80</button>
+<button id="play90">90</button>
+<button id="play100">100</button>
+<button id="play110">110</button>
+<button id="play120">120</button>
+<button id="play130">130</button>
+<button id="play140">140</button>
+<button id="play150">150</button>
+<button id="play165">165</button>
+<button id="play175">175</button>
+<button id="play185">185</button>
+<button id="play195">195</button>
+<button id="play200">200</button>
+ <audio id="soundtrack40" autoplay loop style="display:none">
+<source src="music/40bpm.mp3" type='audio/mp3'>
+</audio>
+ <audio id="soundtrack50" autoplay loop style="display:none">
+<source src="music/50bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack60" autoplay loop style="display:none">
+<source src="music/60bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack70" autoplay loop style="display:none">
+<source src="music/70bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack80" autoplay loop style="display:none">
+<source src="music/80bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack90" autoplay loop style="display:none">
+<source src="music/90bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack100" autoplay loop style="display:none">
+<source src="music/100bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack110" autoplay loop style="display:none">
+<source src="music/110bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack120" autoplay loop style="display:none">
+<source src="music/120bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack130" autoplay loop style="display:none">
+<source src="music/130bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack140" autoplay loop style="display:none">
+<source src="music/140bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack150" autoplay loop style="display:none">
+<source src="music/150bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack165" autoplay loop style="display:none">
+<source src="music/165bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack175" autoplay loop style="display:none">
+<source src="music/175bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack185" autoplay loop style="display:none">
+<source src="music/185bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack195" autoplay loop style="display:none">
+<source src="music/195bpm.mp3" type='audio/mp3'>
+</audio>
+<audio id="soundtrack200" autoplay loop style="display:none">
+<source src="music/200bpm.mp3" type='audio/mp3'>
+</audio>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+</div>
+
+<script>
+var isPaused = false;
+var soundTrack40,soundTrack50,soundTrack60,soundTrack70,soundTrack80,soundTrack90,
+soundTrack100,soundTrack110,soundTrack120,soundTrack130,soundTrack140,soundTrack150,
+soundTrack165,soundTrack175,soundTrack185,soundTrack195,soundTrack200;
+
+soundTrack40 = document.getElementById('soundtrack40');
+soundTrack50 = document.getElementById('soundtrack50');
+soundTrack60 = document.getElementById('soundtrack60');
+soundTrack70 = document.getElementById('soundtrack70');
+soundTrack80 = document.getElementById('soundtrack80');
+soundTrack90 = document.getElementById('soundtrack90');
+soundTrack100 = document.getElementById('soundtrack100');
+soundTrack110 = document.getElementById('soundtrack110');
+soundTrack120 = document.getElementById('soundtrack120');
+soundTrack130 = document.getElementById('soundtrack130');
+soundTrack140 = document.getElementById('soundtrack140');
+soundTrack150 = document.getElementById('soundtrack150');
+soundTrack165 = document.getElementById('soundtrack165');
+soundTrack175 = document.getElementById('soundtrack175');
+soundTrack185 = document.getElementById('soundtrack185');
+soundTrack195 = document.getElementById('soundtrack195');
+soundTrack200 = document.getElementById('soundtrack200');
+
+$('#play40').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play40').text('40')
+        soundTrack40.pause()
+    } else {
+        $('#play40').text('Pause')
+        soundTrack40.play()
+    }
+});
+$('#play50').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play50').text('50')
+        soundTrack40.pause()
+    } else {
+        $('#play50').text('Pause')
+        soundTrack40.play()
+    }
+});
+$('#play60').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play60').text('60')
+        soundTrack60.pause()
+    } else {
+        $('#play60').text('Pause')
+        soundTrack60.play()
+    }
+});
+$('#play70').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play70').text('70')
+        soundTrack70.pause()
+    } else {
+        $('#play70').text('Pause')
+        soundTrack70.play()
+    }
+});
+$('#play80').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play80').text('80')
+        soundTrack80.pause()
+    } else {
+        $('#play80').text('Pause')
+        soundTrack80.play()
+    }
+});
+$('#play90').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play90').text('90')
+        soundTrack90.pause()
+    } else {
+        $('#play90').text('Pause')
+        soundTrack90.play()
+    }
+});
+$('#play100').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play100').text('100')
+        soundTrack100.pause()
+    } else {
+        $('#play100').text('Pause')
+        soundTrack100.play()
+    }
+});
+$('#play110').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play110').text('110')
+        soundTrack110.pause()
+    } else {
+        $('#play110').text('Pause')
+        soundTrack110.play()
+    }
+});
+$('#play120').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play120').text('120')
+        soundTrack120.pause()
+    } else {
+        $('#play120').text('Pause')
+        soundTrack120.play()
+    }
+});
+$('#play130').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play130').text('130')
+        soundTrack130.pause()
+    } else {
+        $('#play130').text('Pause')
+        soundTrack130.play()
+    }
+});
+$('#play140').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play140').text('140')
+        soundTrack140.pause()
+    } else {
+        $('#play140').text('Pause')
+        soundTrack140.play()
+    }
+});
+$('#play150').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play150').text('150')
+        soundTrack150.pause()
+    } else {
+        $('#play150').text('Pause')
+        soundTrack150.play()
+    }
+});
+$('#play165').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play165').text('165')
+        soundTrack165.pause()
+    } else {
+        $('#play165').text('Pause')
+        soundTrack165.play()
+    }
+});
+$('#play175').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play175').text('175')
+        soundTrack175.pause()
+    } else {
+        $('#play175').text('Pause')
+        soundTrack175.play()
+    }
+});
+$('#play185').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play185').text('185')
+        soundTrack185.pause()
+    } else {
+        $('#play185').text('Pause')
+        soundTrack185.play()
+    }
+});
+$('#play195').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play195').text('195')
+        soundTrack195.pause()
+    } else {
+        $('#play195').text('Pause')
+        soundTrack195.play()
+    }
+});
+$('#play200').click(function() {
+    isPaused = !isPaused;
+    if (!isPaused) {
+        $('#play200').text('200')
+        soundTrack200.pause()
+    } else {
+        $('#play200').text('Pause')
+        soundTrack200.play()
+    }
+});
+</script>
+</body>
+
+</html>
