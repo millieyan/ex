@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+	<title>偵測裝置方向</title>
+	<style>
+		body{
+			margin:50px;
+			font-size:15px;
+		}
+	</style>
+	alpha:<span id="alpha"></span><br/>
+	beta:<span id="beta"></span><br/>
+	gamma:<span id="gamma"></span><br/>
+	</head>
+	<script>
+	if(window.DeviceOrientationEvent) {
+		window.addEventListener('deviceorientation', function(event) {
+      var a = document.getElementById('alpha'),//z角度0~360
+      		b = document.getElementById('beta'),//x角度-180~180
+      		g = document.getElementById('gamma'),//y角度-90 度到 90
+      		alpha = event.alpha,
+      		beta = event.beta,
+		  	gamma = event.gamma;
+      
+      a.innerHTML = Math.round(alpha);
+      b.innerHTML = Math.round(beta);
+      g.innerHTML = Math.round(gamma);
+          
+		}, false);
+  }
+</script>
+</html>
