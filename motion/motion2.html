@@ -2,20 +2,16 @@
 <html>
 <head>
   <meta charset="UTF-8">
-	<title>偵測裝置方向</title>
-	<style>
-		body{
-			margin:50px;
-			font-size:15px;
-		}
-	</style>
-	alpha:<span id="alpha"></span><br/>
-	beta:<span id="beta"></span><br/>
-	gamma:<span id="gamma"></span><br/>
+	<title>偵測裝置加速度</title>
+<body>
+	x:<span id="tx"></span><br/>
+	y:<span id="ty"></span><br/>
+	z:<span id="tz"></span><br/>
+</body>
 	</head>
 	<script>
 	if(window.DeviceOrientationEvent) {
-  window.addEventListener('devicemotion', function(event) {
+	window.addEventListener('devicemotion', function(event) {
     
     var tx = document.getElementById('tx'),
         ty = document.getElementById('ty'),
