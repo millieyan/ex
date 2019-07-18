@@ -20,9 +20,9 @@
         y = event.acceleration.y,
         z = event.acceleration.z;
 
-    tx.innerHTML = Math.round(x);
-    ty.innerHTML = Math.round(y);
-    tz.innerHTML = Math.round(z);
+    tx.innerHTML = x.toFixed(2);
+    ty.innerHTML = y.toFixed(2);
+    tz.innerHTML = z.toFixed(2);
 
     }, false);
 }else{
