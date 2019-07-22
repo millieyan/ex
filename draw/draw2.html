@@ -4,14 +4,14 @@
 <title>偵測裝置加速度</title>
 <div id="info">moving chart
 </div>
-	x:<span id="tx"></span><br/>
+	x:<span id="accelerationx"></span><br/>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
 
 <script>
 
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
-var xx = 0, mm = 0;
+var xx = 0, accelerationx, y;
 
 init();
 animate();
@@ -34,19 +34,21 @@ function init() {
   grid.rotation.x = Math.PI / 2
   scene.add(grid)
   /////////////////////////////////////////////////////////
-  plot = createNewLine(new THREE.Vector3());
-  plot.frustumCulled = false;
-  scene.add(plot);
+    plot = createNewLine(new THREE.Vector3());
+	plot.frustumCulled = false;
+	scene.add(plot);
   
   
-  if(window.DeviceOrientationEvent) {
-	window.addEventListener('devicemotion', function(event) {
-    var tx = document.getElementById('tx');
-        x = event.acceleration.x;
-        tx.innerHTML = x.toFixed(2);
+    if(window.DeviceOrientationEvent) {
+		window.addEventListener('devicemotion', function(event) {
+			accelerationx = document.getElementById('accelerationx');
+			y = event.acceleration.x;
+			accelerationx.innerHTML = y.toFixed(2);
+		}, false);
+	}
 
-}, false);
-}
+  
+
 
 }
 function createNewLine(startingPoint) {
@@ -71,7 +73,7 @@ function addPoint(myPoint) {
 
 function animate() {
   xx += 0.1;
-  pt = new THREE.Vector3(xx,tx, 0);
+  pt = new THREE.Vector3(xx,y, 0);	
   addPoint(pt);
   
   if (xx - camera.position.x > 5) {
