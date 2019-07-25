@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<title>偵測裝置加速度</title>
+<div id="info">moving chart
+</div>
+x:<span id="accelerationx"></span><br/>
+
+<audio id="bgMusic">
+<source src="pumb.mp3" type="audio/mp3">
+</audio>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
+
+<script>
+
+var camera, scene, renderer, plot;
+const MAX_LINE_POINTS = 300;
+var xx = 0, accelerationx, y;
+
+init();
+animate();
+
+function init() {
+var audio = document.getElementById("bgMusic");
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+  camera = new THREE.OrthographicCamera(-50, 50, 10, -10, -10, 100);
+  camera.position.z = 10;
+
+  grid = new THREE.GridHelper(100, 10, 'red', 'white');
+  grid.rotation.x = Math.PI / 2
+  scene.add(grid)
+  /////////////////////////////////////////////////////////
+    plot = createNewLine(new THREE.Vector3());
+	plot.frustumCulled = false;
+	scene.add(plot);
+  
+  
+    if(window.DeviceOrientationEvent) {
+		window.addEventListener('devicemotion', function(event) {
+			accelerationx = document.getElementById('accelerationx');
+			y = event.acceleration.x;
+			accelerationx.innerHTML = y.toFixed(2);
+		}, false);
+	}
+	
+	audio.play();
+
+	
+
+
+
+}
+function createNewLine(startingPoint) {
+  var geometry = new THREE.Geometry();
+
+  for (let i = 0; i < MAX_LINE_POINTS; i++) {
+    geometry.vertices.push(startingPoint.clone());
+  }
+
+  myLine = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+    color: 0x222222
+  }));
+
+  return myLine;
+}
+
+function addPoint(myPoint) {
+  plot.geometry.vertices.shift();
+  plot.geometry.vertices.push(myPoint);
+  plot.geometry.verticesNeedUpdate = true;
+}
+
+function animate() {
+  xx += 0.1;
+  pt = new THREE.Vector3(xx,y, 0);	
+  addPoint(pt);
+  
+  if (xx - camera.position.x > 5) {
+    camera.position.x += 5
+  }
+
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+
+</script>
