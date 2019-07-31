@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div {
+    margin-top: 5em;
+}
+#container {
+    width:60vw;
+    height: 60vw;
+    float:left;
+    background-color:pink;
+    margin: 10px;
+}
+</style>
+</head>
+<body> 
+<div>
+ 
+</div>
+<hr>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+<script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js">
+</script>
+<script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
+<script>
+//////////////////////////////////////////////////////////////////////////////
+var RhythmSample = function () {
+    loadSounds(this, {
+        click: 'https://millieyan.github.io/ex/music/xmas.mp3'
+    });
+};
+/////////////////////////////////////////////////////////////////////////////////////////
+var sample = new RhythmSample();
+init();
+initAudio();
+animate();
+function initAudio () {
+	sample = new RhythmSample();
+	quantizeMode = 1; // default eighth
+	recordOn = false;
+	metronomeOn = false;	
+}
+function playSound2(buffer, time, intensity) {
+    var gainNode = context.createGain();
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+    // Connect source to a gain node
+    source.connect(gainNode);
+    // Connect gain node to destination
+    gainNode.connect(context.destination);
+    var gainval = intensity || 0.15;
+    gainNode.gain.value = gainval;
+    source[source.start ? 'start' : 'noteOn'](time);
+}
+function playClick() {
+    playSound2(sample.click, 0, 1);  // time = 0: start immediately
+//    playSound2(sample.click, context.currentTime, 0.4);  // time = 0: start immediately
+    if (metronomeOn) {
+        setTimeout(function () {
+            playClick();
+        }, quarterNoteTime);
+    }
+}
+function init() {
+ playClick();
+}
+function animate() {
+    requestAnimationFrame(animate);
+    render();
+}
+function render() {
+    renderer.render(scene, camera);
+}
+</script>
+</body>
+
+</html>

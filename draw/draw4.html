@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<div>
+    <button id='metronome' class='mybutton'>metronome</button>
+    <button id='play' class='mybutton'>play</button>
+</div>
+<div>Set bpm
+    <input id='bpm' value=120 style='width:6em'></input>
+</div>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
+<script>
+function playSound2(buffer, time, intensity) {
+    var gainNode = context.createGain();
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+
+    // Connect source to a gain node
+    source.connect(gainNode);
+    // Connect gain node to destination
+    gainNode.connect(context.destination);
+
+    var gainval = intensity || 0.5;
+    gainNode.gain.value = gainval;
+
+    source[source.start ? 'start' : 'noteOn'](time);
+    
+    /////////////////////////////////
+    // source.start (when, in seconds) 
+    // The 'when' parameter defines when the play will start. 
+    // If when represents a time in the past, the play will start immediately.
+    // https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode/start
+}
+
+////////////////////////////////////////////////////////////////////////////
+// note:
+// preceding spaces of sound samples need to be trimmed clearly
+// note that saving the trimmed sample DOES NOT work well
+// for mp3 files (works ok for wav files)
+// (metronome_click.mp3 has preceding spaces, no matter how I trimmed
+//
+//////////////////////////////////////////////////////////////////////////////
+var RhythmSample = function () {
+    loadSounds(this, {
+        click: 'https://jyunming-chen.github.io/WebAudio/metronome_click.wav',
+        kick: 'https://jyunming-chen.github.io/WebAudio/kick.wav',
+        snare: 'https://jyunming-chen.github.io/WebAudio/snare.wav',
+        hihat: 'https://jyunming-chen.github.io/WebAudio/hihat.wav'
+    });
+};
+
+// play score of one bar
+RhythmSample.prototype.playSequence = function (score) {
+    var startTime = context.currentTime;  // in seconds, from webaudio
+    var eighthNoteTime = 60/tempo/2;;
+
+    for (var ii = 0; ii < score.length; ii++) {
+        if (score[ii].instrument == 'k') 
+            playSound2(this.kick, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);
+        if (score[ii].instrument == 's') 
+            playSound2(this.snare, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);
+        if (score[ii].instrument == 'h') 
+            playSound2(this.hihat, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);
+    }
+
+}
+
+function playClick() {
+    playSound2(sample.click, 0, 1);  // time = 0: start immediately
+//    playSound2(sample.click, context.currentTime, 0.4);  // time = 0: start immediately
+    if (metronomeOn) {
+        setTimeout(function () {
+            playClick();
+        }, quarterNoteTime);
+    }
+}
+
+$('#metronome').click(function () {
+    metronomeOn = !metronomeOn;
+    if (metronomeOn) playClick();
+});
+
+function playScore () {
+    sample.playSequence(score2);
+    if (loopOn) {
+        setTimeout (function() {
+            playScore();
+        }, quarterNoteTime*4);
+    }
+}
+
+$('#play').click(function () {
+    loopOn = !loopOn;
+    if (loopOn) playScore();
+    
+    // bind together
+    metronomeOn = loopOn;
+    if (metronomeOn) playClick();
+});
+
+$('#bpm').on('keyup', function (e) {
+    if (e.keyCode === 13) {
+        tempo = $('#bpm').val();
+        quarterNoteTime = 60 / tempo * 1000;
+    }
+});
+
+///////////////////////////////////////////////////////////////////////////////////
+var sample = new RhythmSample();
+
+// initial setting;
+var tempo = 120;
+var quarterNoteTime = 60 / tempo * 1000;
+var metronomeOn = false;
+var loopOn = false;
+
+// scores
+var score2 = [
+    {time: 0, instrument: 'k'}, 
+    {time: 3.5, instrument: 'k'}, 
+    {time: 5, instrument: 'k'}, 
+           
+    {time: 2, instrument: 's'},
+    {time: 6, instrument: 's'},
+    {time: 7.5, instrument: 's'},
+    
+    {time: 0, instrument: 'h'},
+    {time: 0.5, instrument: 'h'},
+    {time: 1, instrument: 'h'},
+    {time: 1.5, instrument: 'h'},
+    {time: 2.5, instrument: 'h'},
+    {time: 3, instrument: 'h'},
+    {time: 3.5, instrument: 'h'},
+    
+    {time: 4, instrument: 'h'},
+    {time: 4.5, instrument: 'h'},
+    {time: 5, instrument: 'h'},
+    {time: 5.5, instrument: 'h'},
+    {time: 6.5, instrument: 'h'},
+    {time: 7, instrument: 'h'}];
+              
+var score1 = [
+    {time: 0, instrument: 'k',}, 
+    {time: 2, instrument: 's', intensity: 1.0}, 
+    {time: 4, instrument: 'k',},
+    {time: 6, instrument: 's', intensity: 1.0}, 
+    {time: 0, instrument: 'h'}, 
+    {time: 1.5, instrument: 'h'}, 
+    {time: 2, instrument: 'h'}, 
+    {time: 3.5, instrument: 'h'}, 
+    {time: 4, instrument: 'h'}, 
+    {time: 5.5, instrument: 'h'}, 
+    {time: 6, instrument: 'h'}, 
+    {time: 7.5, instrument: 'h'} ];
+
+</script>
