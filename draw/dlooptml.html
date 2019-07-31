@@ -93,7 +93,7 @@ function initAudio () {
 }
 function playSound2(buffer, time, intensity) {
     var gainNode = context.createGain();
-    var source = context.createBufferSource();
+    var source =  baseAudioContext.createBufferSource();
     source.buffer = buffer;
     // Connect source to a gain node
     source.connect(gainNode);

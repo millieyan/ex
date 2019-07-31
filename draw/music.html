@@ -28,19 +28,19 @@ div {
 //////////////////////////////////////////////////////////////////////////////
 var RhythmSample = function () {
     loadSounds(this, {
-        click: 'https://millieyan.github.io/ex/music/xmas.mp3'
+        click: 'https://jyunming-chen.github.io/WebAudio/dingding.wav'
     });
 };
 /////////////////////////////////////////////////////////////////////////////////////////
 var sample = new RhythmSample();
-init();
+var clock = new THREE.Clock();
+
 initAudio();
+init();
 animate();
 function initAudio () {
 	sample = new RhythmSample();
-	quantizeMode = 1; // default eighth
-	recordOn = false;
-	metronomeOn = false;	
+	quantizeMode = 1; 
 }
 function playSound2(buffer, time, intensity) {
     var gainNode = context.createGain();
@@ -56,22 +56,12 @@ function playSound2(buffer, time, intensity) {
 }
 function playClick() {
     playSound2(sample.click, 0, 1);  // time = 0: start immediately
-//    playSound2(sample.click, context.currentTime, 0.4);  // time = 0: start immediately
-    if (metronomeOn) {
-        setTimeout(function () {
-            playClick();
-        }, quarterNoteTime);
-    }
 }
 function init() {
  playClick();
 }
 function animate() {
     requestAnimationFrame(animate);
-    render();
-}
-function render() {
-    renderer.render(scene, camera);
 }
 </script>
 </body>
