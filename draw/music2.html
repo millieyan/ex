@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div {
+    margin-top: 5em;
+}
+#container {
+    width:60vw;
+    height: 60vw;
+    float:left;
+    background-color:pink;
+    margin: 10px;
+}
+</style>
+</head>
+<body> 
+<div>
+ 
+</div>
+<hr>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
+<script>
+//////////////////////////////////////////////////////////////////////////////
+var RhythmSample = function () {
+    loadSounds(this, {
+        click: 'https://jyunming-chen.github.io/WebAudio/dingding.wav'
+    });
+};
+/////////////////////////////////////////////////////////////////////////////////////////
+var sample = new RhythmSample();
+initAudio();
+init();
+animate();
+function initAudio () {
+	sample = new RhythmSample();
+	quantizeMode = 1; 
+}
+function playSound2(buffer, time, intensity) {
+    var gainNode = context.createGain();
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+    // Connect source to a gain node
+    source.connect(gainNode);
+    // Connect gain node to destination
+    gainNode.connect(context.destination);
+    var gainval = intensity || 0.15;
+    gainNode.gain.value = gainval;
+    source[source.start ? 'start' : 'noteOn'](time);
+}
+function playClick() {
+    playSound2(sample.click, 0, 1);  // time = 0: start immediately
+}
+function init() {
+ playClick();
+}
+function animate() {
+    requestAnimationFrame(animate);
+}
+</script>
+</body>
+
+</html>
