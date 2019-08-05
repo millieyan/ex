@@ -23,12 +23,6 @@ RhythmSample.prototype.play = function () {
         playSound(this.kick);  
 };
 
-function RhythmSample() { 
-    this.isPlaying = false; 
-    loadSounds(this, {kick: 'https://millieyan.github.io/ex/music/pumb.mp3'}, function() { 
-    this.play(); 
-    }.bind(this)); 
-}; 
 /////////////////////////////////////////////////////////////////////////////////////
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
@@ -107,21 +101,21 @@ function addPoint(myPoint) {
 }
 
 function animate() {
-  xx += 0.4;
+  xx += 0.5;
     if(y>-0.01){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
 	else if(y<0.01){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
 	else if(y<-0.05){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
 	else if(y>0.05){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
   if (xx - camera.position.x > 5) {
