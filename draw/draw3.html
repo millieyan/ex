@@ -5,42 +5,51 @@
 <div id="info">moving chart
 </div>
 	x:<span id="accelerationx"></span><br/>
+	<div><button id='play' style="display: block"> Play</button></div>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
 <script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js"></script>
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script>
-
-function RhythmSample() { 
-    this.isPlaying = false; 
-    loadSounds(this, {kick: 'https://github.com/millieyan/ex/blob/master/music/xmas.mp3'}, function() { 
-    this.play(); 
-    }.bind(this)); 
-}; 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////
+var mute = false;
+$('#play').click ( function() {
+   mute = !mute;
+});
+////////////////////////////////////////////////////////////////////////////////////////
+var RhythmSample = function () {
+    loadSounds(this, {
+        click: 'https://jyunming-chen.github.io/WebAudio/dingding.wav'
+    });
+};
 /////////////////////////////////////////////////////////////////////////////////////
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
 var xx = 0, accelerationx, y;
 var sample = new RhythmSample();
-var isPaused = true;
-$('#play').click(function() {
-    isPaused = !isPaused;
-    if (isPaused) {
-        $('#play').text('Play')
-          sample.pause()
-    } else {
-        $('#play').text('Pause')
-		  sample.play();
-    }
-});
-
-
-
+initAudio();
 init();
 animate();
-
+function initAudio () {
+	sample = new RhythmSample();
+	quantizeMode = 1; 
+}
+function playSound2(buffer, time, intensity) {
+    var gainNode = context.createGain();
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+    // Connect source to a gain node
+    source.connect(gainNode);
+    // Connect gain node to destination
+    gainNode.connect(context.destination);
+    var gainval = intensity || 0.15;
+    gainNode.gain.value = gainval;
+    source[source.start ? 'start' : 'noteOn'](time);
+}
+function playClick() {
+    playSound2(sample.click, 0, 1);  // time = 0: start immediately
+}
 function init() {
 
   renderer = new THREE.WebGLRenderer({
@@ -71,8 +80,12 @@ function init() {
 			accelerationx.innerHTML = y.toFixed(2);
 		}, false);
 	}
-
-  
+////////////////////////////////////////////////////////////////////////////////
+   playClick();
+ setInterval ( function() {
+   console.log ('in interval ...')
+   if (!mute) playClick();
+ }, 500 );
 
 
 }
@@ -97,21 +110,21 @@ function addPoint(myPoint) {
 }
 
 function animate() {
-  xx += 0.4;
+  xx += 0.5;
     if(y>-0.01){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
 	else if(y<0.01){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
 	else if(y<-0.05){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
 	else if(y>0.05){
-	  pt = new THREE.Vector3(xx,y, 0);	
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
 	}
   if (xx - camera.position.x > 5) {

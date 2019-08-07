@@ -16,13 +16,17 @@ div {
 </head>
 <body> 
 <div>
- 
+<button id='start'>toggle</button>
 </div>
 <hr>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js"></script>
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script>
+var mute = false;
+$('#start').click ( function() {
+   mute = !mute;
+});
 //////////////////////////////////////////////////////////////////////////////
 var RhythmSample = function () {
     loadSounds(this, {
@@ -55,9 +59,13 @@ function playClick() {
 }
 function init() {
  playClick();
+ setInterval ( function() {
+   console.log ('in interval ...')
+   if (!mute) playClick();
+ }, 500 );
 }
 function animate() {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate);    
 }
 </script>
 </body>

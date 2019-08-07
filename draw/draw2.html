@@ -12,39 +12,44 @@
 <script src="https://dl.dropboxusercontent.com/u/3587259/Code/Threejs/OrbitControls.js"></script>
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script>
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////
+var mute = false;
+$('#play').click ( function() {
+   mute = !mute;
+});
+////////////////////////////////////////////////////////////////////////////////////////
 var RhythmSample = function () {
     loadSounds(this, {
-        kick: 'https://millieyan.github.io/ex/music/pumb.mp3'
+        click: 'https://jyunming-chen.github.io/WebAudio/dingding.wav'
     });
 };
-RhythmSample.prototype.play = function () {
-        playSound(this.kick);  
-};
-
 /////////////////////////////////////////////////////////////////////////////////////
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
 var xx = 0, accelerationx, y;
 var sample = new RhythmSample();
-var isPaused = true;
-$('#play').click(function() {
-    isPaused = !isPaused;
-    if (isPaused) {
-        $('#play').text('Play')
-          sample.pause()
-    } else {
-        $('#play').text('Pause')
-		  sample.play();
-    }
-});
-
-
-
+initAudio();
 init();
 animate();
-
+function initAudio () {
+	sample = new RhythmSample();
+	quantizeMode = 1; 
+}
+function playSound2(buffer, time, intensity) {
+    var gainNode = context.createGain();
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+    // Connect source to a gain node
+    source.connect(gainNode);
+    // Connect gain node to destination
+    gainNode.connect(context.destination);
+    var gainval = intensity || 0.15;
+    gainNode.gain.value = gainval;
+    source[source.start ? 'start' : 'noteOn'](time);
+}
+function playClick() {
+    playSound2(sample.click, 0, 1);  // time = 0: start immediately
+}
 function init() {
 
   renderer = new THREE.WebGLRenderer({
@@ -75,8 +80,12 @@ function init() {
 			accelerationx.innerHTML = y.toFixed(2);
 		}, false);
 	}
-
-  
+////////////////////////////////////////////////////////////////////////////////
+   playClick();
+ setInterval ( function() {
+   console.log ('in interval ...')
+   if (!mute) playClick();
+ }, 500 );
 
 
 }
