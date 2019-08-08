@@ -16,7 +16,7 @@ div {
 </head>
 <body> 
 <div>
-<button id='start'>toggle</button>
+<button id='play'>play</button>
 </div>
 <hr>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -24,7 +24,7 @@ div {
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script>
 var mute = false;
-$('#start').click ( function() {
+$('#play').click ( function() {
    mute = !mute;
 });
 //////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,6 @@ function playClick() {
     playSound2(sample.click, 0, 1);  // time = 0: start immediately
 }
 function init() {
- playClick();
  setInterval ( function() {
    console.log ('in interval ...')
    if (!mute) playClick();
