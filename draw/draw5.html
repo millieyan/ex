@@ -14,12 +14,8 @@
 <script>
 /////////////////////////////////////////////////////////////////////////////////////////////////
 var mute = false;
-var yy = 0;
 $('#play').click ( function() {
-   console.log ('hit toggle');
-   //mute = !mute;
-   //playSound2 (sample.click, 0, 1);
-    playClick();
+   mute = !mute;
 });
 ////////////////////////////////////////////////////////////////////////////////////////
 var RhythmSample = function () {
@@ -134,16 +130,9 @@ function animate() {
   if (xx - camera.position.x > 5) {
     camera.position.x += 5
   }
-  
-   requestAnimationFrame(animate);   
-  // yy = Math.sin (0.3*( Date.now()%70/10) );
-   //console.log (yy);
-   if (y > 3) {
-   
-  //    console.log ('playClick() ' + y);
-      playClick();
-   }
-     renderer.render(scene, camera);
+
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
 }
 
 </script>
