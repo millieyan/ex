@@ -16,16 +16,28 @@ div {
 </head>
 <body> 
 <div>
- 
+<button id='start'>toggle</button>
 </div>
 <hr>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js"></script>
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script>
+var mute = false;
+var yy = 0;
+
+$('#start').click ( function() {
+   console.log ('hit toggle');
+   //mute = !mute;
+   //playSound2 (sample.click, 0, 1);
+  // volume=0;
+  // playClick();
+   
+});
 //////////////////////////////////////////////////////////////////////////////
 var RhythmSample = function () {
     loadSounds(this, {
-        click: 'https://jyunming-chen.github.io/WebAudio/dingding.wav'
+        click: 'https://jyunming-chen.github.io/WebAudio/ding.wav'
     });
 };
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -53,10 +65,27 @@ function playClick() {
     playSound2(sample.click, 0, 1);  // time = 0: start immediately
 }
 function init() {
- playClick();
+ //playClick();
+/* 
+ setInterval ( function() {
+   console.log ('in interval ...')
+   if (!mute) {
+   	  console.log ('not mute')
+   	  playClick();
+   }
+ }, 500 );
+*/
 }
 function animate() {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate);   
+   yy = Math.sin (0.3*( Date.now()%70/10) );
+   //console.log (yy);
+   if (yy > 0.999) {
+   
+      console.log ('playClick() ' + yy);
+      playClick();
+   }
+   
 }
 </script>
 </body>

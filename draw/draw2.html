@@ -18,8 +18,8 @@ var yy = 0;
 $('#play').click ( function() {
    console.log ('hit toggle');
    //mute = !mute;
-   //playSound2 (sample.click, 0, 1);
-    playClick();
+   //playSound2 (sample.click, 0, 1);\
+   playClick();
 });
 ////////////////////////////////////////////////////////////////////////////////////////
 var RhythmSample = function () {
@@ -88,8 +88,9 @@ function init() {
  
  setInterval ( function() {
    console.log ('in interval ...')
-   if (!mute) playClick();
- }, 500 );
+
+  if (!mute) playClick();
+ }, 1000000 );
 
 
 }
@@ -138,11 +139,10 @@ function animate() {
    requestAnimationFrame(animate);   
   // yy = Math.sin (0.3*( Date.now()%70/10) );
    //console.log (yy);
-   if (y > 3) {
-   
-  //    console.log ('playClick() ' + y);
+   if (y>3||y<-3) {
       playClick();
    }
+ 
      renderer.render(scene, camera);
 }
 
