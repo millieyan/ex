@@ -148,11 +148,11 @@ function animate() {
   if (xx - camera.position.x > 5) {
     camera.position.x += 5
   }
-   if (y>3&&y<6) {
+ if (y>2.5&&y<5.5) {
+     playClick2();
+  }
+    else  if (y>7) {
       playClick();
-   }
-    else  if (y>6) {
-      playClick2();
    }
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);
