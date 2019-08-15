@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<title>偵測裝置加速度</title>
+<div id="info">moving chart
+</div>
+	x:<span id="accelerationx"></span><br/>
+<div><button id='play' style="display: block"> Play</button></div>
+<div><button id='play2' style="display: block"> Play2</button></div>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js"></script>
+<script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
+<script>
+/////////////////////////////////////////////////////////////////////////////////////////////////
+var mute = false;
+var yy = 0;
+$('#play').click ( function() {
+   console.log ('hit toggle');
+   //mute = !mute;
+   //playSound2 (sample.click, 0, 1);\
+   playClick();
+});
+$('#play2').click ( function() {
+   console.log ('hit toggle2');
+   //mute = !mute;
+   //playSound2 (sample.click, 0, 1);\
+   playClick2();
+});
+////////////////////////////////////////////////////////////////////////////////////////
+var RhythmSample = function () {
+    loadSounds(this, {
+        click: 'https://jyunming-chen.github.io/WebAudio/snare.wav',
+		kick: 'https://jyunming-chen.github.io/WebAudio/kick.wav'
+    });
+};
+/////////////////////////////////////////////////////////////////////////////////////
+var camera, scene, renderer, plot;
+const MAX_LINE_POINTS = 300;
+var xx = 0, accelerationx, y;
+var sample = new RhythmSample();
+var sample2 = new RhythmSample();
+initAudio();
+init();
+animate();
+function initAudio () {
+	sample = new RhythmSample();
+	sample2 = new RhythmSample();
+	quantizeMode = 1; 
+}
+function playSound2(buffer, time, intensity) {
+    var gainNode = context.createGain();
+    var source = context.createBufferSource();
+    source.buffer = buffer;
+    // Connect source to a gain node
+    source.connect(gainNode);
+    // Connect gain node to destination
+    gainNode.connect(context.destination);
+    var gainval = intensity || 0.15;
+    gainNode.gain.value = gainval;
+    source[source.start ? 'start' : 'noteOn'](time);
+}
+function playClick() {
+    playSound2(sample.click, 0, 1);  // time = 0: start immediately
+}
+function playClick2() {
+    playSound2(sample.kick, 0, 1);  // time = 0: start immediately
+}
+function init() {
+
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+  camera = new THREE.OrthographicCamera(-50, 50, 10, -10, -10, 100);
+  camera.position.z = 10;
+
+  grid = new THREE.GridHelper(100, 10, 'red', 'white');
+  grid.rotation.x = Math.PI / 2
+  scene.add(grid)
+  /////////////////////////////////////////////////////////
+    plot = createNewLine(new THREE.Vector3());
+	plot.frustumCulled = false;
+	scene.add(plot);
+  
+  
+    if(window.DeviceOrientationEvent) {
+		window.addEventListener('devicemotion', function(event) {
+			accelerationx = document.getElementById('accelerationx');
+			y = event.acceleration.x;
+			accelerationx.innerHTML = y.toFixed(2);
+		}, false);
+	}
+////////////////////////////////////////////////////////////////////////////////
+ 
+ setInterval ( function() {
+   console.log ('in interval ...')
+
+  if (!mute) playClick();
+ }, 1000000 );
+
+
+}
+function createNewLine(startingPoint) {
+  var geometry = new THREE.Geometry();
+
+  for (let i = 0; i < MAX_LINE_POINTS; i++) {
+    geometry.vertices.push(startingPoint.clone());
+  }
+
+  myLine = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+    color: 0x222222
+  }));
+
+  return myLine;
+}
+
+function addPoint(myPoint) {
+  plot.geometry.vertices.shift();
+  plot.geometry.vertices.push(myPoint);
+  plot.geometry.verticesNeedUpdate = true;
+}
+
+function animate() {
+  xx += 0.5;
+    if(y>-0.01){
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
+	  addPoint(pt);
+	}
+	else if(y<0.01){
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
+	  addPoint(pt);
+	}
+	else if(y<-0.05){
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
+	  addPoint(pt);
+	}
+	else if(y>0.05){
+	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
+	  addPoint(pt);
+	}
+  if (xx - camera.position.x > 5) {
+    camera.position.x += 5
+  }
+   if (y>3&&y<6) {
+      playClick();
+   }
+    else  if (y>6) {
+      playClick2();
+   }
+	requestAnimationFrame(animate);   
+    renderer.render(scene, camera);
+}
+
+</script>
