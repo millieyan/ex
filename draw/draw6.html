@@ -4,7 +4,8 @@
 <title>偵測裝置加速度</title>
 <div id="info">moving chart
 </div>
-	x:<span id="accelerationx"></span><br/>
+	<h2>x:<span id="accelerationx"></span>
+    z:<span id="accelerationz"></span><br/></h2>
 <div><button id='play' style="display: block"> Play</button></div>
 <div><button id='play2' style="display: block"> Play2</button></div>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
@@ -38,7 +39,7 @@ var RhythmSample = function () {
 /////////////////////////////////////////////////////////////////////////////////////
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
-var xx = 0, accelerationx, y;
+var xx = 0, accelerationx, y,accelerationz, z;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
 initAudio();
@@ -89,12 +90,14 @@ function init() {
 	plot.frustumCulled = false;
 	scene.add(plot);
   
-  
     if(window.DeviceOrientationEvent) {
 		window.addEventListener('devicemotion', function(event) {
 			accelerationx = document.getElementById('accelerationx');
+			accelerationz = document.getElementById('accelerationz');
 			y = event.acceleration.x;
+		    z = event.acceleration.z;
 			accelerationx.innerHTML = y.toFixed(2);
+			accelerationz.innerHTML = z.toFixed(2);
 		}, false);
 	}
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +154,7 @@ function animate() {
  if (y>2.5&&y<5.5) {
      playClick2();
   }
-    else  if (y>7) {
+    else  if (z<-3.5) {
       playClick();
    }
 	requestAnimationFrame(animate);   
