@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html>
-<meta charset="UTF-8">
-<title>偵測裝置加速度</title>
-<div id="info">moving chart
-</div>
-	<h2>x:<span id="accelerationx"></span>
-    z:<span id="accelerationz"></span><br/></h2>
-<div><button id='play' style="display: block"> Play</button></div>
-<div><button id='play2' style="display: block"> Play2</button></div>
-<div><button id='play3' style="display: block"> Play3</button></div>
+<head>
+  <meta charset="UTF-8">
+	<title>偵測裝置方向</title>
+	<style>
+		body{
+			margin:50px;
+			font-size:15px;
+		}
+	</style>
+	beta:<span id="accelerationb"></span><br/>
+	<div><button id='play' style="display: block"> Play</button></div>
+	<div><button id='play2' style="display: block"> Play2</button></div>
+	<div><button id='play3' style="display: block"> Play3</button></div>
+	</head>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script>
-/////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 var mute = false;
 var yy = 0;
 $('#play').click ( function() {
@@ -41,7 +46,7 @@ var RhythmSample = function () {
 /////////////////////////////////////////////////////////////////////////////////////
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
-var xx = 0, accelerationx, y,accelerationz, z;
+var xx = 0,b,accelerationb,y;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
 initAudio();
@@ -74,7 +79,6 @@ function playClick3() {
     playSound2(sample.hihat, 0, 1);  // time = 0: start immediately
 }
 function init() {
-
   renderer = new THREE.WebGLRenderer({
     antialias: true
   });
@@ -95,33 +99,26 @@ function init() {
 	plot.frustumCulled = false;
 	scene.add(plot);
   
-    if(window.DeviceOrientationEvent) {
-		window.addEventListener('devicemotion', function(event) {
-			accelerationx = document.getElementById('accelerationx');
-			accelerationz = document.getElementById('accelerationz');
-			y = event.acceleration.x;
-		    z = event.acceleration.z;
-			accelerationx.innerHTML = y.toFixed(2);
-			accelerationz.innerHTML = z.toFixed(2);
+	if(window.DeviceOrientationEvent) {
+		window.addEventListener('deviceorientation', function(event) {
+        var accelerationb = document.getElementById('accelerationb'),
+      		b = event.beta;
+			accelerationb.innerHTML = Math.round(b);
+		var	y = Math.round(event.beta)
 		}, false);
-	}
-////////////////////////////////////////////////////////////////////////////////
- 
- setInterval ( function() {
+  }
+ /////////////////////////////////////////////////////////////////////////////////
+  setInterval ( function() {
    console.log ('in interval ...')
-
   if (!mute) playClick();
  }, 1000000 );
-
 
 }
 function createNewLine(startingPoint) {
   var geometry = new THREE.Geometry();
-
   for (let i = 0; i < MAX_LINE_POINTS; i++) {
     geometry.vertices.push(startingPoint.clone());
   }
-
   myLine = new THREE.Line(geometry, new THREE.LineBasicMaterial({
     color: 0x222222
   }));
@@ -136,37 +133,15 @@ function addPoint(myPoint) {
 }
 
 function animate() {
-  xx += 0.5;
-    if(y>-0.01){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y<0.01){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y<-0.05){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y>0.05){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
+    xx += 0.5;
+	pt = new THREE.Vector3(xx,Math.round(y),0);	
+	addPoint(pt); 
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
-   }
-   if (y>4&&y<7) {
-     playClick2();
-   }
-   else  if (y>8) {
-     playClick();
-   }
-   else  if (z<-7) {
-     playClick3();
    }
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);
 }
 
 </script>
+</html>

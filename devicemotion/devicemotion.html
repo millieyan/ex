@@ -12,25 +12,25 @@
 	alpha:<span id="alpha"></span><br/>
 	beta:<span id="beta"></span><br/>
 	gamma:<span id="gamma"></span><br/>
+		
 	</head>
 	<script>
 	if(window.DeviceOrientationEvent) {
-  window.addEventListener('devicemotion', function(event) {
-    
-    var tx = document.getElementById('tx'),
-        ty = document.getElementById('ty'),
-        tz = document.getElementById('tz'),
-        x = event.acceleration.x,
-        y = event.acceleration.y,
-        z = event.acceleration.z;
-
-    tx.innerHTML = Math.round(x);
-    ty.innerHTML = Math.round(y);
-    tz.innerHTML = Math.round(z);
-
-    }, false);
-}else{
-    document.querySelector('body').innerHTML = '你的瀏覽器不支援';
-}
+		window.addEventListener('deviceorientation', function(event) {
+        var a = document.getElementById('alpha'),
+        	b = document.getElementById('beta'),
+      		g = document.getElementById('gamma'),
+      		alpha = event.alpha,
+      		beta = event.beta,
+		 	gamma = event.gamma;
+      
+      a.innerHTML = Math.round(alpha);
+      b.innerHTML = Math.round(beta);
+      g.innerHTML = Math.round(gamma);
+          
+		}, false);
+  }else{
+  	document.querySelector('body').innerHTML = '你的瀏覽器不支援喔';
+  }
 </script>
 </html>
