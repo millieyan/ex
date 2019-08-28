@@ -10,6 +10,7 @@
 		}
 	</style>
 	gamma:<span id="accelerationg"></span><br/>
+	beta:<span id="accelerationb"></span><br/>
 	<div><button id='play' style="display: block"> Play</button></div>
 	<div><button id='play2' style="display: block"> Play2</button></div>
 	</head>
@@ -32,13 +33,13 @@ $('#play2').click ( function() {
 var RhythmSample = function () {
     loadSounds(this, {
         click: 'https://millieyan.github.io/ex/WebAudio/tambourine.mp3',
-		hand: 'https://millieyan.github.io/ex/WebAudio/hand3.mp3'
+		hand: 'https://millieyan.github.io/ex/WebAudio/hand5.mp3'
     });
 };
 /////////////////////////////////////////////////////////////////////////////////////
 var camera, scene, renderer, plot;
 const MAX_LINE_POINTS = 300;
-var xx = 0,g,accelerationg,y=0,gammay;
+var xx = 0,g,accelerationg,y=0,gammay,accelerationb,b,betay;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
 initAudio();
@@ -91,9 +92,13 @@ function init() {
 	if(window.DeviceOrientationEvent) {
 		window.addEventListener('deviceorientation', function(event) {
 	    accelerationg = document.getElementById('accelerationg'),
+	    accelerationb = document.getElementById('accelerationb'),
 	    gammay = Math.round(event.gamma)/10,
+		gammab = Math.round(event.beta)/10,
       	g = event.gamma,
-		accelerationg.innerHTML = Math.round(g);
+		b = event.beta,
+		accelerationg.innerHTML = Math.round(g),
+		accelerationb.innerHTML = Math.round(b);
 		}, false);
 
   }
@@ -129,10 +134,15 @@ function animate() {
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
    }	
-	if(gammay>7){
+	if(gammay>6){
      playClick();
 	}
-   
+	else if(gammay<-6&&gammay>-6.8){
+     playClick();
+	}
+   if(betay>3){
+     playClick2();
+	}
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);
 }
