@@ -94,7 +94,7 @@ function init() {
 	    accelerationg = document.getElementById('accelerationg'),
 	    accelerationb = document.getElementById('accelerationb'),
 	    gammay = Math.round(event.gamma)/10,
-		gammab = Math.round(event.beta)/10,
+		betay = Math.round(event.beta)/10,
       	g = event.gamma,
 		b = event.beta,
 		accelerationg.innerHTML = Math.round(g),
@@ -134,13 +134,21 @@ function animate() {
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
    }	
+	/*
 	if(gammay>6){
      playClick();
 	}
 	else if(gammay<-6&&gammay>-6.8){
      playClick();
 	}
-   if(betay>3){
+	*/
+	if(gammay>1.8){
+     playClick();
+	}
+	else if(gammay<-1.7&&gammay>-2){
+     playClick();
+	}
+   if(betay>2.8){
      playClick2();
 	}
 	requestAnimationFrame(animate);   
