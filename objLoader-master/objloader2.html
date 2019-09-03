@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<style>
+	body {
+	  font-family: Monospace;
+	  background-color: #000;
+	  color: #fff;
+	  margin: 0px;
+	  overflow: hidden;
+	}
+
+	#info {
+	  color: #fff;
+	  position: absolute;
+	  top: 10px;
+	  width: 100%;
+	  text-align: center;
+	  z-index: 100;
+	  display: block;
+	}
+
+	#info a,
+	.button {
+	  color: #f00;
+	  font-weight: bold;
+	  text-decoration: underline;
+	  cursor: pointer
+	}
+
+
+</style>
+</head>
+
+<body> 
+	<div id="info">
+	  <a href="http://threejs.org" target="_blank">three.js</a> - OBJLoader + MTLLoader
+	  <br>Model:
+		<input type="text" id="readModel" value="tambourine">
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+	</script>
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
+	<script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/MTLLoader.js"></script>
+	<script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/OBJLoader.js"></script>
+
+
+	
+<script>
+var camera, scene, renderer;
+var theObject;
+
+var mouseX = 0,
+    mouseY = 0;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var controls;
+var bs;
+var modelName;
+var theModel;
+
+$('#readModel').change( function() {
+	modelName = $(this).val();
+	console.log ('model: ' + modelName)
+    scene.remove ( scene.getObjectByName ('OBJ') )
+	readModel (modelName);
+	readModel.rotation.z=Math.PI/2;	
+});
+
+
+init();
+animate();
+
+
+function init() {
+
+  container = document.createElement('div');
+  document.body.appendChild(container);
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+  renderer.setClearColor (0x000000);
+
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+  camera.position.z = 50;
+  camera.position.y = -30;
+    camera.position.x = 50;
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  // scene
+
+  scene = new THREE.Scene();
+
+  var ambient = new THREE.AmbientLight(0x444444);
+  scene.add(ambient);
+ gridxz = new THREE.GridHelper (200, 20,'red','white');
+ //scene.add (gridxz);
+
+  let axis = new THREE.AxisHelper (20);
+ // scene.add (axis);
+  	
+  var directionalLight = new THREE.DirectionalLight(0xffffff);
+  directionalLight.position.set(0, 0, 1).normalize();
+  scene.add(directionalLight);
+
+  var pointLight = new THREE.PointLight (0xffffff);
+  pointLight.position.set (100,200,-100);
+  scene.add (pointLight);
+	
+  window.addEventListener('resize', onWindowResize, false);
+ 
+  ///////////////////////////////////////////////////////////////////	
+var spotLight = new THREE.SpotLight( 0xffffff,1.5,200,0.3,0,1 );
+spotLight.position.set( 50, 100, 10 );
+
+spotLight.castShadow = true;
+
+spotLight.shadow.mapSize.width = 1024;
+spotLight.shadow.mapSize.height = 1024;
+
+spotLight.shadow.camera.near = 500;
+spotLight.shadow.camera.far = 4000;
+spotLight.shadow.camera.fov = 30;
+
+scene.add( spotLight );
+var spotLightHelper = new THREE.SpotLightHelper( spotLight );
+//scene.add( spotLightHelper );
+  ////////////////////////////////////////////////////////////
+  
+	function onWindowResize() {
+
+	  windowHalfX = window.innerWidth / 2;
+	  windowHalfY = window.innerHeight / 2;
+
+	  camera.aspect = window.innerWidth / window.innerHeight;
+	  camera.updateProjectionMatrix();
+
+	  renderer.setSize(window.innerWidth, window.innerHeight);
+
+	}
+  
+}
+
+function readModel (modelName, targetSize=40) {
+
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+
+  var onError = function(xhr) {};
+
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load(modelName+'.mtl', function(materials) {
+
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load(modelName+'.obj', function(object) {
+		
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		
+		theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, 0, -3.1416/2, 'ZYX'))
+
+    }, onProgress, onError);
+
+  });
+
+}
+
+
+////////////////////////////////////////
+// wrap an Object3D around the given object
+// so that it is centered at +Y axis
+// 
+function unitize (object, targetSize) {  
+	
+	// find bounding box of 'object'
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;
+			
+}
+
+
+function animate() {
+
+  requestAnimationFrame(animate);
+  render();
+
+}
+
+function render() {
+		
+  renderer.render(scene, camera);
+
+}
+
+
+</script>
+</body>
+
+</html>
