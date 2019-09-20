@@ -7,6 +7,9 @@
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
 	</script>
 <script>
+let loader = new THREE.TextureLoader();
+loader.crossOrigin = '';
+texture = loader.load('drum/wood.jpg');
 
 var renderer, scene, camera, controls;
 init();
@@ -32,23 +35,26 @@ function init(){
  
    controls=new THREE.OrbitControls(camera,renderer.domElement);
 //////////////////////////////////////////////////////////////////////////   
-   var geometry = new THREE.CylinderGeometry( 1, 1, 0.05, 32 );
-   var material = new THREE.MeshBasicMaterial( {color: 0xe6b800} );
+   var geometry = new THREE.CylinderGeometry( 0.9, 5, 0.05, 32 );
+   geometry.openEnded = true;
+   var material = new THREE.MeshBasicMaterial( {color: 0xB49C6D} );
   /*var material = new THREE.MeshStandardMaterial( {
     color: 0x5e571a,
     roughness: 0.5,
     metalness: 0.5,
  
 } );*/
-  var cylinder = new THREE.Mesh( geometry, material );
-  var cylinder2 = new THREE.Mesh( geometry, material );
-  cylinder2.position.y = cylinder.position.x + 0.3;
+	var texMat2 = new THREE.MeshPhongMaterial({
+    map: texture,
+    side: THREE.DoubleSide
+	});
+    var cylinder = new THREE.Mesh( geometry, material );
+    var cylinder2 = new THREE.Mesh( geometry, material );
+    cylinder2.position.y = cylinder.position.x + 0.6;
     
- 
-  var geometry2 = new THREE.CylinderGeometry( 0.05, 0.05, 1, 32 );
-  var material2 = new THREE.MeshBasicMaterial( {color: 0x696969} );
-  var cylinder3 = new THREE.Mesh( geometry2, material2 );
-  cylinder3.position.y = cylinder.position.x + 0.15;
+   var geometry2 = new THREE.CylinderGeometry( 0.2, 0.2, 5, 32 );
+   var cylinder3 = new THREE.Mesh( geometry2, texMat2 );
+   cylinder3.position.y = cylinder.position.x + 0.15;
 
   scene.add( cylinder );
   scene.add( cylinder2);

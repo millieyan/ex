@@ -9,38 +9,60 @@
 <script>
 function Createring(){
     var ring = new THREE.Object3D();
-    var	geometry = new THREE.CylinderGeometry( 5, 50, 3, 128);
-    geometry.openEnded = true;
-    var material = new THREE.MeshPhongMaterial({
-    	color:0xB49C6D
-    });
-	var mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = true; mesh.receiveShadow = true;
-    ring.add(mesh);
-    ring.position.set ( -130, 60, 30 );
+	var geometry = new THREE.CylinderGeometry( 2.4, 12, 0.05, 32 );
+   geometry.openEnded = true;
+	var material = new THREE.MeshBasicMaterial( {color: 0xB49C6D} );
+	var texMat2 = new THREE.MeshPhongMaterial({
+    map: texture,
+    side: THREE.DoubleSide
+	});
+    var cylinder = new THREE.Mesh( geometry, material );
+    var cylinder2 = new THREE.Mesh( geometry, material );
+    cylinder2.position.y = cylinder.position.y -3;
+    
+   var geometry2 = new THREE.CylinderGeometry( 0.2, 0.2, 12, 32 );
+   var cylinder3 = new THREE.Mesh( geometry2, texMat2 );
+   cylinder3.position.y = cylinder.position.y -3;
+   ring.add(cylinder,cylinder2,cylinder3)
     return ring;
 }
+    let loader = new THREE.TextureLoader();
+    loader.crossOrigin = '';
+    texture = loader.load('drum/wood.jpg');
+	alpha = loader.load('drum/a.jpg');
 function Createbody(){
-    var cylinder = new THREE.Mesh(new THREE.CylinderGeometry( 40, 40, 10, 64 ,1,true),
-    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drum/wood.jpg'),side: THREE.DoubleSide}));
+	var texMat = new THREE.MeshPhongMaterial({
+    map: texture,
+    alphaMap: alpha,
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+    var cylinder = new THREE.Mesh(new THREE.CylinderGeometry( 80, 80, 20, 64 ,1,true),texMat);
 	cylinder.position.set(0,5,0);
 	return cylinder;
 }
 
 function Createtop(){
-	var top = new THREE.Mesh(new THREE.RingGeometry( 38, 40, 64 ),
-    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drum/wood.jpg'),side: THREE.DoubleSide}));
-	top.position.set(0,9.9,0);
+	var texMat2 = new THREE.MeshPhongMaterial({
+     map: texture,
+     side: THREE.DoubleSide
+	});
+	var top = new THREE.Mesh(new THREE.RingGeometry( 76, 80, 64 ),texMat2);
+	top.position.set(0,15,0);
 	top.rotation.x=-Math.PI/2;
 	return top;
 }
 function Createbottom(){
-	var bottom = new THREE.Mesh(new THREE.RingGeometry( 38, 40, 64 ),
-    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drum/wood.jpg'),side: THREE.DoubleSide}));
-	bottom.position.set(0,0.1,0);
+	var texMat2 = new THREE.MeshPhongMaterial({
+     map: texture,
+     side: THREE.DoubleSide
+    });
+	var bottom = new THREE.Mesh(new THREE.RingGeometry( 76, 80, 64 ),texMat2);
+	bottom.position.set(0,-5,0);
 	bottom.rotation.x=-Math.PI/2;
 	return bottom;
 }
+
 var renderer, scene, camera, controls;
 init();
 animate();
@@ -55,7 +77,7 @@ function init(){
   
   scene = new THREE.Scene();
   var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
-  //scene.add(grid);
+ // scene.add(grid);
   var axes=new THREE.AxisHelper(5);
   //scene.add(axes);
   
@@ -66,14 +88,30 @@ function init(){
    controls=new THREE.OrbitControls(camera,renderer.domElement);
    
    var ring=Createring();
-   //scene.add(ring);
+   var ring2=Createring();
+   var ring3=Createring();
+   var ring4=Createring();
+   var ring5=Createring();
+   var ring6=Createring();
+   var ring7=Createring();
+    var ring8=Createring();
+   scene.add(ring,ring2,ring3,ring4,ring5,ring6,ring7,ring8);
+   ring.position.set(20,7,77);
+   ring2.position.set(64,7,47);
+   ring3.position.set(79,7,-7);
+   ring4.position.set(55,7,-57);
+   ring5.position.set(10,7,-78);
+   ring6.position.set(-42,7,-67);
+   ring7.position.set(-75,7,-23);
+   ring8.position.set(-73,7.3,29);
    var body=Createbody();
    scene.add(body);
    var top=Createtop();
    scene.add(top);
    var bottom=Createbottom();
    scene.add(bottom);
- //////////////////////////////////////////////////////////////////////////////////////
+
+  /////////////////////////////////////////////////////////////////////////////////////
    var spotLight = new THREE.SpotLight( 0xffffff,0.8);
    spotLight.position.set( 0, 500, 0 );
    spotLight.castShadow = true;
