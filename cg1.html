@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+	<head>
+	<style>
+	#title {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    color: #ffff00
+}
+
+body {
+    overflow: hidden
+}
+	</style>
+	</head>
+	<body>
+	   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+      <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script>
+function Createfloor(){
+    var floor = new THREE.Object3D();
+	var geometry = new THREE.PlaneGeometry( 4, 8, 32 );
+	var material = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var plane = new THREE.Mesh( geometry, material );
+    floor.add(plane);
+	floor.rotation.x=Math.PI/2;
+	floor.rotation.z=Math.PI/2;
+	floor.position.set(-14,0,0);
+    return floor;
+}
+
+function Createfloor2(){
+    var floor2 = new THREE.Object3D();
+	var geometry2 = new THREE.PlaneGeometry( 4, 8.5, 32 );
+	var material2 = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var plane2 = new THREE.Mesh( geometry2, material2 );
+    floor2.add(plane2);
+	floor2.rotation.x=Math.PI/2;
+	floor2.rotation.z=Math.PI/2;
+	floor2.rotation.y=Math.PI/13.5;
+	floor2.position.set(-6,1,0);
+    return floor2;
+}
+function Createfloor3(){
+    var floor3 = new THREE.Object3D();
+	var geometry3 = new THREE.PlaneGeometry( 4, 8, 32 );
+	var material3 = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var plane3 = new THREE.Mesh( geometry3, material3 );
+    floor3.add(plane3);
+	floor3.rotation.x=Math.PI/2;
+	floor3.rotation.z=Math.PI/2;
+	floor3.position.set(2,2,0);
+    return floor3;
+}
+function Createfloor4(){
+    var floor4 = new THREE.Object3D();
+	var geometry4 = new THREE.PlaneGeometry( 4, 8, 32 );
+	var material4 = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var plane4 = new THREE.Mesh( geometry4, material4 );
+    floor4.add(plane4);
+	floor4.rotation.x=Math.PI/2;
+	floor4.rotation.z=Math.PI/2;
+	floor4.position.set(12,0,0);
+    return floor4;
+}
+function Createfloor5(){
+    var floor5 = new THREE.Object3D();
+	var geometry5 = new THREE.PlaneGeometry( 4, 3, 32 );
+	var material5 = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var plane5 = new THREE.Mesh( geometry5, material5 );
+    floor5.add(plane5);
+	floor5.rotation.x=Math.PI/2;
+	floor5.rotation.z=-Math.PI/2;
+	floor5.rotation.y=-Math.PI/4;
+	floor5.position.set(7,1,0);
+    return floor5;
+}
+function buildcar() {
+	let car=new THREE.Object3D();
+    let loader = new THREE.TextureLoader()
+    loader.crossOrigin = '';
+    let texture = loader.load("https://i.imgur.com/DrvlmNW.jpg");
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(
+      new THREE.Vector3(3, 0, 0),
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(0, 0, -1),
+      new THREE.Vector3(0, 1, 0)
+    );
+
+    var face;
+    face = new THREE.Face3(0, 3, 1);
+    geometry.faces.push(face);
+    face = new THREE.Face3(0, 2, 3);
+    geometry.faces.push(face);
+    face = new THREE.Face3(0, 1, 2);
+    geometry.faces.push(face);
+    face = new THREE.Face3(1, 3, 2);
+    geometry.faces.push(face);
+
+    
+    geometry.computeBoundingSphere();
+    geometry.computeFaceNormals();
+	sceneHUD = new THREE.Scene();
+      let mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
+		map: texture
+      }));
+      car.add(mesh)
+      mesh.rotation.y=Math.PI;
+     
+      return car;
+  }
+  
+
+init();
+animate(); 
+var camera, scene, renderer, light, controls,car;
+var clock = new THREE.Clock;
+function init() {
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+  camera.position.z = 40;
+   camera.position.y = 30;
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  scene = new THREE.Scene();
+
+  gridXZ = new THREE.GridHelper(100, 50, 'red', 'white');
+  scene.add(gridXZ);
+
+  axes = new THREE.AxisHelper(10);
+  //scene.add (axes);
+
+   var floor=Createfloor();
+   scene.add(floor);
+   var floor2=Createfloor2();
+   scene.add(floor2);
+   var floor3=Createfloor3();
+   scene.add(floor3);
+   var floor4=Createfloor4();
+   scene.add(floor4);
+   var floor5=Createfloor5();
+   scene.add(floor5);
+   car=buildcar();
+   car.position.set(16,0,0);
+   scene.add(car);
+   
+  
+	
+  
+}
+
+function animate(){
+  controls.update();
+ 
+  if(car.position.x>=10)car.position.x-=0.1;
+ 
+  else if(car.position.x>=8&&car.position.x<10){
+  car.position.x-=0.1;car.rotation.z=-Math.PI/4;car.position.y+=0.02;car.position.x-=0.1;}
+  else if(car.position.x<8&&car.position.x>=-2){
+  car.rotation.z=0;car.position.y=2;car.position.x-=0.1;}
+  else if(car.position.x<-2&&car.position.x>=-10){
+  car.rotation.z=Math.PI/10;car.position.y-=0.02;car.position.x-=0.1;}
+  else if(car.position.x<-10&&car.position.x>=-16){
+  car.rotation.z=0;car.position.y=0;car.position.x-=0.1;}
+  
+  requestAnimationFrame(animate);
+  render();
+
+ var dt = clock.getDelta();
+}
+    function render(){
+    renderer.render(scene, camera);
+}
+</script>
+</body>
+</html>

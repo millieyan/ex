@@ -11,7 +11,13 @@ function Createring(){
     var ring = new THREE.Object3D();
 	var geometry = new THREE.CylinderGeometry( 2.4, 12, 0.05, 32 );
    geometry.openEnded = true;
-	var material = new THREE.MeshBasicMaterial( {color: 0xB49C6D} );
+	//var material = new THREE.MeshBasicMaterial( {color: 0xB49C6D} );
+	var material = new THREE.MeshStandardMaterial( {
+    color: 0xB49C6D,
+    roughness: 0.2,
+    metalness: 0.6,
+ 
+} );
 	var texMat2 = new THREE.MeshPhongMaterial({
     map: texture,
     side: THREE.DoubleSide
@@ -98,7 +104,7 @@ function init(){
    ring.position.set(21,7,76);
    ring2.position.set(61,7,48);
    ring3.position.set(79,7,-1);
-   ring4.position.set(59,7,-50);
+   ring4.position.set(60,7,-50);
    ring5.position.set(20,7,-77);
    ring6.position.set(-31,7,-72);
    ring7.position.set(-69,7,-37);
@@ -162,10 +168,12 @@ function init(){
    spotLight6.shadow.camera.near = 500;
    spotLight6.shadow.camera.far = 4000;
    spotLight6.shadow.camera.fov = 30;
-   scene.add(spotLight,spotLight2,spotLight3,spotLight4,spotLight5,spotLight6);
-   
-   //var spotLightHelper = new THREE.SpotLightHelper( spotLight2 );
-   //scene.add( spotLightHelper );
+   scene.add(spotLight2,spotLight3,spotLight4,spotLight5,spotLight6);
+   let ambientLight = new THREE.AmbientLight(0xffffff)
+	scene.add(ambientLight)
+
+  // var spotLightHelper = new THREE.SpotLightHelper( spotLight );
+  // scene.add( spotLightHelper );
     var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800, 30, 30),
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drum/floor.jpg')}));
     floor.rotation.x = -Math.PI / 2;
