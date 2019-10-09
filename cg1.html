@@ -24,11 +24,12 @@ body {
 function Createfloor(){
     var floor = new THREE.Object3D();
 	var geometry = new THREE.PlaneGeometry( 4, 8, 32 );
-	var material = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var material = new THREE.MeshBasicMaterial( {color: 0x696969} );
 	var plane = new THREE.Mesh( geometry, material );
     floor.add(plane);
 	floor.rotation.x=Math.PI/2;
 	floor.rotation.z=Math.PI/2;
+	floor.rotation.y=Math.PI;
 	floor.position.set(-14,0,0);
     return floor;
 }
@@ -48,22 +49,24 @@ function Createfloor2(){
 function Createfloor3(){
     var floor3 = new THREE.Object3D();
 	var geometry3 = new THREE.PlaneGeometry( 4, 8, 32 );
-	var material3 = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var material3 = new THREE.MeshBasicMaterial( {color: 0x696969} );
 	var plane3 = new THREE.Mesh( geometry3, material3 );
     floor3.add(plane3);
 	floor3.rotation.x=Math.PI/2;
 	floor3.rotation.z=Math.PI/2;
+	floor3.rotation.y=Math.PI;
 	floor3.position.set(2,2,0);
     return floor3;
 }
 function Createfloor4(){
     var floor4 = new THREE.Object3D();
 	var geometry4 = new THREE.PlaneGeometry( 4, 8, 32 );
-	var material4 = new THREE.MeshBasicMaterial( {color: 0x696969, side: THREE.DoubleSide} );
+	var material4 = new THREE.MeshBasicMaterial( {color: 0x696969} );
 	var plane4 = new THREE.Mesh( geometry4, material4 );
     floor4.add(plane4);
 	floor4.rotation.x=Math.PI/2;
 	floor4.rotation.z=Math.PI/2;
+	floor4.rotation.y=-Math.PI;
 	floor4.position.set(12,0,0);
     return floor4;
 }
