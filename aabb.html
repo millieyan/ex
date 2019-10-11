@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+	<head>
+	<style>
+	#title {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    color: #ffff00
+}
+
+body {
+    overflow: hidden
+}
+	</style>
+	</head>
+	<body>
+	   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+      <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script>
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
+
+class AABB {
+  constructor(pos, vel, halfSize) {
+  	this.center = pos.clone();
+    this.vel = vel.clone();
+    this.halfSize = halfSize.clone();
+    this.min = pos.clone().sub (this.halfSize);
+    this.max = pos.clone().add (this.halfSize);
+    this.box = new THREE.Mesh (new THREE.PlaneGeometry(this.halfSize.x * 2, this.halfSize.y * 2, 0), new THREE.MeshBasicMaterial());
+    
+    scene.add(this.box);
+    this.box.position.copy(this.center);
+  }
+  update(dt) {
+    this.center.add(this.vel.clone().multiplyScalar(dt));
+    
+    if (Math.abs(this.center.x) > 40-this.halfSize.x) this.vel.x *= -1;
+    if (Math.abs(this.center.y) > 40-this.halfSize.y) this.vel.y *= -1;
+    
+    this.max.addVectors(this.center, this.halfSize);
+    this.min.subVectors(this.center, this.halfSize);
+    this.box.position.copy(this.center);
+  }
+  collide(other) {
+    // boolean returning
+ 		
+    // x-axis
+    if (Math.abs(this.center.x - other.center.x) >= this.halfSize.x + other.halfSize.x)
+    	return false;
+    // y-axis
+    if (Math.abs(this.center.y - other.center.y) >= this.halfSize.y + other.halfSize.y)
+    	return false;
+    return true;
+    
+  }
+}
+
+var camera, scene, renderer;
+var bbs = [];
+var red = [];
+init();
+animate();
+
+function init() {
+
+  renderer = new THREE.WebGLRenderer();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+
+  scene = new THREE.Scene();
+  camera = new THREE.OrthographicCamera(-50, 50, 50, -50, -10, 100);
+  camera.position.z = 10;
+
+  var geometry = new THREE.Geometry();
+  geometry.vertices.push(
+    new THREE.Vector3(-40, -40, 0),
+    new THREE.Vector3(40, -40, 0),
+    new THREE.Vector3(40, 40, 0),
+    new THREE.Vector3(-40, 40, 0),
+    new THREE.Vector3(-40, -40, 0));
+
+  var border = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+    color: 0x0000ff
+  }));
+  scene.add(border);
+
+  window.addEventListener('resize', onWindowResize, false);
+
+  /////////////////////////////////////////////////
+  let speed = 3;
+  let blocks = 5;
+  for (var i = 0; i < blocks; i++)
+  bbs.push ( new AABB(new THREE.Vector3(myRandom()*40,myRandom()*40,0), new THREE.Vector3(myRandom()*speed, myRandom()*speed,0), new THREE.Vector3(2, 1, 0)) );
+  
+}
+
+function myRandom () {  //[-1,1]
+	return Math.random()*2-1;
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  render();
+	
+	for (let i = 0; i < bbs.length; i++) {
+  	bbs[i].update(0.2);
+    for (let j = i+1; j < bbs.length; j++) {
+    	if (bbs[i].collide(bbs[j])) {
+      	bbs[i].box.material.color.set ('red');
+      	bbs[j].box.material.color.set ('red');
+     	if (!bbs[i].collide(bbs[j])){
+      	bbs[j].box.material.color.set ('white');
+      }
+      }
+     else if (!bbs[i].collide(bbs[j])){
+     for(let a=j+1;a< bbs.length;a++){
+       if (bbs[i].collide(bbs[a])){
+        bbs[i].box.material.color.set ('red');
+      	bbs[a].box.material.color.set ('red');
+     	if (!bbs[i].collide(bbs[a])){
+      	bbs[a].box.material.color.set ('white');
+      }
+        }
+       else{
+        bbs[i].box.material.color.set ('white');
+       	bbs[a].box.material.color.set ('white');
+       }
+       }
+     }
+      }
+      
+    }
+       	
+}
+
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+
+</script>
+</body>
+</html>
