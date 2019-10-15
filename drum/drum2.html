@@ -572,6 +572,8 @@ function init(){
   var height=window.innerHeight; 
   renderer.setSize(width,height);
   renderer.setClearColor(0x8888888);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = 2;
   
   scene = new THREE.Scene();
   var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
@@ -601,6 +603,7 @@ function init(){
    spotLight.shadow.camera.near = 500;
    spotLight.shadow.camera.far = 4000;
    spotLight.shadow.camera.fov = 30;
+
 
    var spotLight2 = new THREE.SpotLight( 0xffffff,0.8);
    spotLight2.position.set( 0, 0, 500 );
@@ -649,11 +652,18 @@ function init(){
    scene.add(spotLight,spotLight2,spotLight3,spotLight4,spotLight5);
    //var spotLightHelper = new THREE.SpotLightHelper( spotLight2 );
    //scene.add( spotLightHelper );
+   
+  
+	drum.castShadow = true;
+    drum.receiveShadow = true;
+	
+	
     var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800, 30, 30),
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('floor.jpg')}));
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
-    floor.castShadow = true; floor.receiveShadow = true;
+    floor.castShadow = true;
+	floor.receiveShadow = true;
 }
 function animate() {
  controls.update();

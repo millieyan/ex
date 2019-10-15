@@ -14,8 +14,8 @@ function Createring(){
 	//var material = new THREE.MeshBasicMaterial( {color: 0xB49C6D} );
 	var material = new THREE.MeshStandardMaterial( {
     color: 0xB49C6D,
-    roughness: 0.2,
-    metalness: 0.6,
+    roughness: 0.55,
+    metalness: 1,
  
 } );
 	var texMat2 = new THREE.MeshPhongMaterial({
@@ -79,12 +79,15 @@ function init(){
   var height=window.innerHeight; 
   renderer.setSize(width,height);
   renderer.setClearColor(0x8888888);
+ 
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type =  THREE.BasicShadowMap;
   
   scene = new THREE.Scene();
   var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
-  //scene.add(grid);
+ // scene.add(grid);
   var axes=new THREE.AxisHelper(5);
-  //scene.add(axes);
+ // scene.add(axes);
   
    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
    camera.position.set(200, 250, 500); 
@@ -116,69 +119,76 @@ function init(){
    var bottom=Createbottom();
    scene.add(bottom);
   /////////////////////////////////////////////////////////////////////////////////////
-   var spotLight = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight.position.set( 0, 500, 0 );
-   spotLight.castShadow = true;
-   spotLight.shadow.mapSize.width = 1024;
-   spotLight.shadow.mapSize.height = 1024;
-   spotLight.shadow.camera.near = 500;
-   spotLight.shadow.camera.far = 4000;
-   spotLight.shadow.camera.fov = 30;
-   var spotLight2 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight2.position.set( 0, 0, 500 );
-   spotLight2.castShadow = true;
-   spotLight2.shadow.mapSize.width = 1024;
-   spotLight2.shadow.mapSize.height = 1024;
-   spotLight2.shadow.camera.near = 500;
-   spotLight2.shadow.camera.far = 4000;
-   spotLight2.shadow.camera.fov = 30;
-   var spotLight3 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight3.position.set( 0, 0, -500 );
-   spotLight3.castShadow = true;
-   spotLight3.shadow.mapSize.width = 1024;
-   spotLight3.shadow.mapSize.height = 1024;
-   spotLight3.shadow.camera.near = 500;
-   spotLight3.shadow.camera.far = 4000;
-   spotLight3.shadow.camera.fov = 30;
-   
-   var spotLight4 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight4.position.set( 500, 0, 0 );
-   spotLight4.castShadow = true;
-   spotLight4.shadow.mapSize.width = 1024;
-   spotLight4.shadow.mapSize.height = 1024;
-   spotLight4.shadow.camera.near = 500;
-   spotLight4.shadow.camera.far = 4000;
-   spotLight4.shadow.camera.fov = 30;
-   
-   var spotLight5 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight5.position.set(-500, 0, 0 );
-   spotLight5.castShadow = true;
-   spotLight5.shadow.mapSize.width = 1024;
-   spotLight5.shadow.mapSize.height = 1024;
-   spotLight5.shadow.camera.near = 500;
-   spotLight5.shadow.camera.far = 4000;
-   spotLight5.shadow.camera.fov = 30;
-   
-   
-   var spotLight6 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight6.position.set(0, -500, 0 );
-   spotLight6.castShadow = true;
-   spotLight6.shadow.mapSize.width = 1024;
-   spotLight6.shadow.mapSize.height = 1024;
-   spotLight6.shadow.camera.near = 500;
-   spotLight6.shadow.camera.far = 4000;
-   spotLight6.shadow.camera.fov = 30;
-   scene.add(spotLight2,spotLight3,spotLight4,spotLight5,spotLight6);
-   let ambientLight = new THREE.AmbientLight(0xffffff)
-	scene.add(ambientLight)
+    let ambientLight = new THREE.AmbientLight(0xffffff);
+	scene.add(ambientLight);
+	
+    let spotLight = new THREE.SpotLight(0xffffff,0.1);
+	spotLight.position.set(0, 1000, 0);
+	spotLight.castShadow = true;
+	
+	scene.add(spotLight);
+	let spotLightHelper = new THREE.SpotLightHelper(spotLight);
+	scene.add(spotLightHelper);
+	
+	let spotLight2 = new THREE.SpotLight(0xffffff,0.1);
+	spotLight2.position.set(21,77,76);
+	spotLight2.castShadow = true;
+	scene.add(spotLight2);
+	
+	let spotLight3 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight3.position.set(61,77,48);
+	spotLight3.castShadow = true;
+	scene.add(spotLight3);
+	
+	let spotLight4 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight4.position.set(79,77,-1);
+	spotLight4.castShadow = true;
+	scene.add(spotLight4);
+	
+	let spotLight5 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight5.position.set(60,77,-50);
+	spotLight5.castShadow = true;
+	scene.add(spotLight5);
+	
+	let spotLight6 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight6.position.set(20,77,-77);
+	spotLight6.castShadow = true;
+	scene.add(spotLight6);
+	
+	let spotLight7 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight7.position.set(-31,77,-72);
+	spotLight7.castShadow = true;
+	scene.add(spotLight7);
+	
+	let spotLight8 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight8.position.set(-69,77,-37);
+	spotLight8.castShadow = true;
+	scene.add(spotLight8);
+	
+	let spotLight9 = new THREE.SpotLight(0xffffff,0.2);
+	spotLight9.position.set(-78,77.3,11);
+	spotLight9.castShadow = true;
+	scene.add(spotLight9);
 
-  // var spotLightHelper = new THREE.SpotLightHelper( spotLight );
-  // scene.add( spotLightHelper );
+
+  spotLight.shadowMapWidth = 512;
+  spotLight.shadowMapHeight = 512;
+  spotLight.shadowCameraNear = 10;
+  spotLight.shadowCameraFar = 4000;
+  spotLight.shadowCameraFov = 120;
+  spotLight.shadow.bias = 0.001;
+   body.castShadow = true;
+   body.receiveShadow = true;
+ 
+
+  
     var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800, 30, 30),
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drum/floor.jpg')}));
     floor.rotation.x = -Math.PI / 2;
-   // scene.add(floor);
-    floor.castShadow = true; floor.receiveShadow = true;
+	floor.position.y=-50;
+    scene.add(floor);
+    floor.castShadow = true;
+	floor.receiveShadow = true;
 }
 function animate() {
  controls.update();
