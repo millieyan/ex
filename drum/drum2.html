@@ -9,7 +9,6 @@
 <script>
 function Createbass(){
     var bass  = new THREE.Object3D();
-
     var bassmain = new THREE.Object3D();
         var extrudeSettings = {
             amount: 12,
@@ -50,7 +49,6 @@ function Createbass(){
         buttonMesh.rotation.x = Math.PI / 2;
         buttonMesh.position.y = -5.5;
 
-        
         //////////////////////
         var extrudeSettingsButton = {
             amount: 6,
@@ -90,19 +88,19 @@ function Createbass(){
         bassmain.add(meshTop);
         bassmain.rotation.x = Math.PI / 2;
 
-    var connectgeometry = new THREE.BoxGeometry(5, 11, 9);
-    var connectmaterial = new THREE.MeshPhongMaterial({color:0xffffff});
-    var connectmeshR = new THREE.Mesh(connectgeometry, connectmaterial);
-    var connectmeshL = connectmeshR.clone();
-    connectmeshR.castShadow = true; connectmeshR.receiveShadow = true;
-    connectmeshL.castShadow = true; connectmeshL.receiveShadow = true;
+       var connectgeometry = new THREE.BoxGeometry(5, 11, 9);
+       var connectmaterial = new THREE.MeshPhongMaterial({color:0xffffff});
+       var connectmeshR = new THREE.Mesh(connectgeometry, connectmaterial);
+       var connectmeshL = connectmeshR.clone();
+       connectmeshR.castShadow = true; connectmeshR.receiveShadow = true;
+       connectmeshL.castShadow = true; connectmeshL.receiveShadow = true;
 
-    connectmeshR.position.set(65, 10, -10);
-    connectmeshR.rotation.z = Math.PI/18;
-    connectmeshL.position.set(-65, 10, -10);
-    connectmeshL.rotation.z = -Math.PI/18;
-
-    var standR = new THREE.Object3D();
+       connectmeshR.position.set(65, 10, -10);
+       connectmeshR.rotation.z = Math.PI/18;
+       connectmeshL.position.set(-65, 10, -10);
+       connectmeshL.rotation.z = -Math.PI/18;
+ 
+        var standR = new THREE.Object3D();
         var standgeometry = new THREE.CylinderGeometry(2.2, 2.2, 80, 64);
         var standmaterial = new THREE.MeshPhongMaterial({color:0xffffff});
         var standRmesh = new THREE.Mesh(standgeometry, standmaterial);
@@ -562,101 +560,63 @@ function BassStepMesh(){
     return a;
 }
 var renderer, scene, camera, controls;
+var lightarray = [];
 init();
 animate();
 
 function init(){
-  renderer=new THREE.WebGLRenderer();
-  document.body.appendChild(renderer.domElement);
-  var width=window.innerWidth;
-  var height=window.innerHeight; 
-  renderer.setSize(width,height);
-  renderer.setClearColor(0x8888888);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = 2;
+    renderer=new THREE.WebGLRenderer();
+    document.body.appendChild(renderer.domElement);
+    var width=window.innerWidth;
+    var height=window.innerHeight; 
+    renderer.setSize(width,height);
+    renderer.setClearColor(0x8888888);
+    //renderer.shadowMap.enabled = true;
+    renderer.shadowMapEnabled = true;
+    //renderer.shadowMap.type =  THREE.BasicShadowMap;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+	  
   
-  scene = new THREE.Scene();
-  var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
-  //scene.add(grid);
-  var axes=new THREE.AxisHelper(5);
-  //scene.add(axes);
+    scene = new THREE.Scene();
+    var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
+    //scene.add(grid);
+    var axes=new THREE.AxisHelper(5);
+    //scene.add(axes);
   
-   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
-   camera.position.set(200, 250, 500); 
-   camera.lookAt(new THREE.Vector3(0,0,0));
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
+    camera.position.set(200, 250, 500); 
+    camera.lookAt(new THREE.Vector3(0,0,0));
  
-   controls=new THREE.OrbitControls(camera,renderer.domElement);
+    controls=new THREE.OrbitControls(camera,renderer.domElement);
    
-   var drum=Createbass();
-   var drum2=Createdrum();
-   var hihat=Createhihat();
-   var bassstep=BassStepMesh();
-   scene.add(drum,drum2,hihat,bassstep);
+    var drum=Createbass();
+    var drum2=Createdrum();
+    var hihat=Createhihat();
+    var bassstep=BassStepMesh();
+    scene.add(drum,drum2,hihat,bassstep);
    
-   var spotLight = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight.position.set( 0, 500, 0 );
-   spotLight.castShadow = true;
-
-   spotLight.shadow.mapSize.width = 1024;
-   spotLight.shadow.mapSize.height = 1024;
-
-   spotLight.shadow.camera.near = 500;
-   spotLight.shadow.camera.far = 4000;
-   spotLight.shadow.camera.fov = 30;
-
-
-   var spotLight2 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight2.position.set( 0, 0, 500 );
-   spotLight2.castShadow = true;
-
-   spotLight2.shadow.mapSize.width = 1024;
-   spotLight2.shadow.mapSize.height = 1024;
-
-   spotLight2.shadow.camera.near = 500;
-   spotLight2.shadow.camera.far = 4000;
-   spotLight2.shadow.camera.fov = 30;
-
-   var spotLight3 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight3.position.set( 0, 0, -500 );
-   spotLight3.castShadow = true;
-
-   spotLight3.shadow.mapSize.width = 1024;
-   spotLight3.shadow.mapSize.height = 1024;
-
-   spotLight3.shadow.camera.near = 500;
-   spotLight3.shadow.camera.far = 4000;
-   spotLight3.shadow.camera.fov = 30;
-   
-   var spotLight4 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight4.position.set( 500, 0, 0 );
-   spotLight4.castShadow = true;
-
-   spotLight4.shadow.mapSize.width = 1024;
-   spotLight4.shadow.mapSize.height = 1024;
-
-   spotLight4.shadow.camera.near = 500;
-   spotLight4.shadow.camera.far = 4000;
-   spotLight4.shadow.camera.fov = 30;
-   
-   var spotLight5 = new THREE.SpotLight( 0xffffff,0.8);
-   spotLight5.position.set(-500, 00, 0 );
-   spotLight5.castShadow = true;
-
-   spotLight5.shadow.mapSize.width = 1024;
-   spotLight5.shadow.mapSize.height = 1024;
-
-   spotLight5.shadow.camera.near = 500;
-   spotLight5.shadow.camera.far = 4000;
-   spotLight5.shadow.camera.fov = 30;
-   
-   scene.add(spotLight,spotLight2,spotLight3,spotLight4,spotLight5);
    //var spotLightHelper = new THREE.SpotLightHelper( spotLight2 );
    //scene.add( spotLightHelper );
    
+        for(var i = 0 ; i < 3; i++){
+        light = new THREE.SpotLight(0xffffff, 0.5);
+        light.exponent = 20;
+        light.castShadow = true;
+        light.shadowCameraNear = 200;
+        light.shadowCameraFar = camera.far;
+        light.shadowCameraFov = 50;
+        light.shadowBias = -0.00022;
+        light.shadowDarkness = 0.5;
+        light.shadowMapWidth = 2048;
+        light.shadowMapHeight = 2048;
+        lightarray.push(light);
+    }
+    for(var i = 0; i < lightarray.length; i++){
+    lightarray[i].position.set(-400+i%2*400, 500, 400);
+    scene.add(lightarray[i]);
+ 
+    }
   
-	drum.castShadow = true;
-    drum.receiveShadow = true;
-	
 	
     var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800, 30, 30),
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('floor.jpg')}));
