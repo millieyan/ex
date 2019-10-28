@@ -29,20 +29,22 @@ body {
 	  text-decoration: underline;
 	  cursor: pointer
 	}
+
 </style>
 </head>
 
 <body> 
-<div id="info">hw2
-	</div>
+	<div id="info">hw2
+</div>
 	<script src="https://threejs.org/build/three.min.js"></script>
-	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+	</script>
 	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
 
 
@@ -58,15 +60,55 @@ var controls;
 var modelName;
 var theModel;
 var gcontrol;
-var period,v;
+var period=10,v=10;
 
-
+var pose1= {
+	setX: 0,
+    rotationup: 0,
+    rotationbody: 0
+};
+var pose2= {
+	setX: 53.91285497507047,
+    rotationup: 2.20268805549534,
+    rotationbody:-0.07348796878387142
+};
+var pose3= {
+	setX: 53.91285497507047,
+    rotationup: -1.8293951875135485,
+    rotationbody: -0.07348796878387142
+};
+ var pose4= {
+	setX: 53.91285497507047,
+    rotationup: -1.8293951875135485,
+    rotationbody: 3
+};
+var pose5= {
+	setX: 53.91285497507047,
+    rotationup: 3,
+    rotationbody: 3
+};
+var pose6= {
+	setX:-60.97983958378495,
+    rotationup: 3,
+    rotationbody: 3
+};
+var pose7= {
+	setX: -60.97983958378495,
+    rotationup:0.6418816388467379,
+    rotationdown:0.1216128332972044
+};
+var pose8= {
+	setX: -39.3019726858877,
+    rotationup: -1.0489919791892474,
+    rotationbody: 0.1216128332972044
+};
+var keys = [{s: 0,pose: pose1}, {s: 0.15,pose: pose2}, {s: 0.3,pose: pose3}, {s: 0.45,pose: pose4}, {s: 0.6,pose: pose5},{s: 0.75,pose: pose6}, {s: 0.9,pose: pose7},{s: 1,pose: pose8}];
 init();
 animate();
 
 
 function init() {
-  stats = new Stats();
+stats = new Stats();
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.top = '0px';
   stats.domElement.style.zIndex = 100;
@@ -137,31 +179,28 @@ function init() {
     floor.castShadow = true;
 	floor.receiveShadow = true;
 	
-  ////////////////////////////////////////////////////////////
-  gcontrol = {
-    setX:0,
-	rotationhead:0,
+	///////////////////////////
+	gcontrol = {
+    setX: 0,
+	rotationhead: 0,
 	rotationbody: 0
+		
   };
 
   var gui = new dat.GUI({
     load: loadJSON(),
     preset: 'Default'
   });
-  
   gui.domElement.id = 'gui';
+
   gui.remember(gcontrol);
-  gui.add(gcontrol, 'setX', -50, 50);
-  gui.add(gcontrol, 'rotationhead', -2, 2);
-  gui.add(gcontrol, 'rotationbody', -2, 2);
+
+  gui.add(gcontrol, 'setX', -100, 100);
+ gui.add(gcontrol, 'rotationhead', -3, 3);
+  gui.add(gcontrol, 'rotationbody', -3, 3);
   
 }
-	
-function loadJSON() {
-   return {
-   }
-}
-function onWindowResize() {
+	function onWindowResize() {
 	  windowHalfX = window.innerWidth / 2;
 	  windowHalfY = window.innerHeight / 2;
 
@@ -169,38 +208,84 @@ function onWindowResize() {
 	  camera.updateProjectionMatrix();
 	  renderer.setSize(window.innerWidth, window.innerHeight);
 }
-
-function readModel ( targetSize=60) {
-   var onProgress = function(xhr) {
-    if (xhr.lengthComputable) {
-      var percentComplete = xhr.loaded / xhr.total * 100;
-      console.log(Math.round(percentComplete, 2) + '% downloaded');
+function loadJSON() {
+  return {
+  
+  "preset": "pose8",
+  "remembered": {
+    "Default": {
+      "0": {
+        "setX": 0,
+        "rotationhead": 0,
+        "rotationbody": 0
+      }
+    },
+    "pose1": {
+      "0": {
+        "setX": 0,
+        "rotationhead": 0,
+        "rotationbody": 0
+      }
+    },
+    "pose2": {
+      "0": {
+        "setX": 53.91285497507047,
+        "rotationhead": 2.20268805549534,
+        "rotationbody": -0.07348796878387142
+      }
+    },
+    "pose3": {
+      "0": {
+        "setX": 53.91285497507047,
+        "rotationhead": -1.8293951875135485,
+        "rotationbody": -0.07348796878387142
+      }
+    },
+    "pose4": {
+      "0": {
+        "setX": 53.91285497507047,
+        "rotationhead": -1.8293951875135485,
+        "rotationbody": 3
+      }
+    },
+    "pose5": {
+      "0": {
+        "setX": 53.91285497507047,
+        "rotationhead": 3,
+        "rotationbody": 3
+      }
+    },
+    "pose6": {
+      "0": {
+        "setX": -60.97983958378495,
+        "rotationhead": 3,
+        "rotationbody": 3
+      }
+    },
+    "pose7": {
+      "0": {
+        "setX": -60.97983958378495,
+        "rotationhead": 0.6418816388467379,
+        "rotationbody": 0.1216128332972044
+      }
+    },
+    "pose8": {
+      "0": {
+        "setX": -39.3019726858877,
+        "rotationhead": -1.0489919791892474,
+        "rotationbody": 0.1216128332972044
+      }
     }
-  };
-
-  var onError = function(xhr) {};
-  var mtlLoader = new THREE.MTLLoader();
-  mtlLoader.setPath('models/');
-  mtlLoader.load('tank.mtl', function(materials) {
-
-    materials.preload();
-    var objLoader = new THREE.OBJLoader();
-    objLoader.setMaterials(materials);
-    objLoader.setPath('models/');
-    objLoader.load('tank.obj', function(object) {
-		let head =  unitize (object, targetSize);
-		//theObject.add ( new THREE.BoxHelper (theObject) )
-		head.name = 'OBJ'
-		scene.add (head);
-		head.position.y=11;
-		//head.setRotationFromEuler (new THREE.Euler (0, 0, 0, 'ZYX'))
-    }, onProgress, onError);
-
-  });
+  },
+  "closed": false,
+  "folders": {}
+}
 
 }
-////2
-function readModel2 ( targetSize=60) {
+
+
+function readModel ( targetSize=40) {
+
   var onProgress = function(xhr) {
     if (xhr.lengthComputable) {
       var percentComplete = xhr.loaded / xhr.total * 100;
@@ -215,16 +300,50 @@ function readModel2 ( targetSize=60) {
   mtlLoader.load('tank.mtl', function(materials) {
 
     materials.preload();
+
     var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
     objLoader.setPath('models/');
     objLoader.load('tank.obj', function(object) {
-		let body =  unitize (object, targetSize);
-		//theObject.add ( new THREE.BoxHelper (theObject) )
+		
+	    head =  unitize (object, targetSize);
+		head.name = 'OBJ'
+        head.position.y=10;
+        scene.add(head);
+        
+    }, onProgress, onError);
+
+  });
+
+}
+////2
+function readModel2 ( targetSize=40) {
+
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+
+  var onError = function(xhr) {};
+
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('tank.mtl', function(materials) {
+
+    materials.preload();
+
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('tank.obj', function(object) {
+		
+	    body=  unitize (object, targetSize);
 		body.name = 'OBJ'
-		scene.add (body);
-		body.position.y=11;
-		//body.setRotationFromEuler (new THREE.Euler (0, 0, 0, 'ZYX'))
+        body.position.y=10;
+        scene.add(body);
+        
     }, onProgress, onError);
 
   });
@@ -232,63 +351,61 @@ function readModel2 ( targetSize=60) {
 }
 
 function unitize (object, targetSize) {  
-    // find bounding box of 'object'
+	
 	var box3 = new THREE.Box3();
 	box3.setFromObject (object);
 	var size = new THREE.Vector3();
 	size.subVectors (box3.max, box3.min);
 	var center = new THREE.Vector3();
 	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
-	
-	//console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
-	//console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
-	
-	// uniform scaling according to objSize
+
 	var objSize = Math.max (size.x, size.y, size.z);
 	var scaleSet = targetSize/objSize;
 				
 	var theObject =  new THREE.Object3D();
+
 	theObject.add (object);
 	object.scale.set (scaleSet, scaleSet, scaleSet);
 	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+    
 	return theObject;
+			
 }
 
 function animate() {
-/*var t = clock.getElapsedTime() % period;
-  var s = t / period; // normalized time
-
-  for (var i = 1; i < keys.length; i++) {
-    if (keys[i].s > s)
-      break;
-  }
-  // take previous one
-  i = i - 1;
-
-  // linearly interpolate between i & i+1
+  	var t = clock.getElapsedTime() % period;
+  	var s = t / period; 
+  
+   for (var i = 1; i < keys.length; i++) {
+  	if (keys[i].s > s)
+    	break;
+  	}
+  
+	i = i-1;
 	var tt = (s - keys[i].s) / (keys[i + 1].s - keys[i].s);
-	*/
-  //////////////////////////////////////////////////////////////////////////////////////////////
-  var localPlane1 = new THREE.Plane( new THREE.Vector3( 0,  1, 0 ), -12.5 );
-  var localPlane2 =new THREE.Plane( new THREE.Vector3( 0,  -1, 0 ), 12.5 );
+    var setX = (1 - tt) * keys[i].pose.setX + tt * keys[i + 1].pose.setX;
+    var rotationhead = (1 - tt) * keys[i].pose.rotationhead+ tt * keys[i + 1].pose.rotationhead;
+    var rotationbody = (1 - tt) * keys[i].pose.rotationbody+ tt * keys[i + 1].pose.rotationbody;
+  
 
-  if(head!= undefined ) {
-   for(let i=0;i<9;i++)
-   head.children[0].children[0].material[i].clippingPlanes = [localPlane1];
-   head.position.x = gcontrol.setX;
-   head.rotation.y = gcontrol.rotationhead;
-  }
-  
-  if(body!= undefined ) {
-    for(let i=0;i<9;i++)
-    body.children[0].children[0].material[i].clippingPlanes = [localPlane2];
-    body.position.x = gcontrol.setX;
-    body.rotation.y = gcontrol.rotationbody;
-     }
-	 
-  
-  stats.update();
-  renderer.localClippingEnabled = true;
+	 var localPlane1 = new THREE.Plane( new THREE.Vector3( 0,  1, 0 ), -12.5 );
+     var localPlane2 =new THREE.Plane( new THREE.Vector3( 0,  -1, 0 ), 12.5 );
+
+	if(head != undefined ) {
+ 		for(let i=0;i<9;i++)
+        head.children[0].children[0].material[i].clippingPlanes = [localPlane1];
+		head.position.x = setX;
+		head.rotation.y = gcontrol.rotationhead;
+	}
+		if(body!= undefined ) {
+ 		 for(let i=0;i<9;i++)
+            body.children[0].children[0].material[i].clippingPlanes = [localPlane2];
+			body.position.x = setX;
+			body.rotation.y = gcontrol.rotationbody;
+    }
+
+	stats.update();
+	renderer.localClippingEnabled = true;
   requestAnimationFrame(animate);
   render();
 
