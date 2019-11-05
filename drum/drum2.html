@@ -8,35 +8,6 @@
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
 	</script>
 <script>
-function Createring(){
-    var ring = new THREE.Object3D();
-	var geometry = new THREE.CylinderGeometry( 2.4, 12, 0.05, 32 );
-   geometry.openEnded = true;
-	//var material = new THREE.MeshBasicMaterial( {color: 0xB49C6D} );
-	var material = new THREE.MeshStandardMaterial( {
-    color: 0xB49C6D,
-    roughness: 0.55,
-    metalness: 1,
- 
-} );
-	var texMat2 = new THREE.MeshPhongMaterial({
-    map: texture,
-    side: THREE.DoubleSide
-	});
-    var cylinder = new THREE.Mesh( geometry, material );
-    var cylinder2 = new THREE.Mesh( geometry, material );
-    cylinder2.position.y = cylinder.position.y -3;
-    
-   var geometry2 = new THREE.CylinderGeometry( 0.2, 0.2, 12, 32 );
-   var cylinder3 = new THREE.Mesh( geometry2, texMat2 );
-   cylinder3.position.y = cylinder.position.y -3;
-   ring.add(cylinder,cylinder2,cylinder3)
-    return ring;
-}
-    let loader = new THREE.TextureLoader();
-    loader.crossOrigin = '';
-    texture = loader.load('drum/wood.jpg');
-	alpha = loader.load('drum/a.jpg');
 function Createbass(){
     var bass  = new THREE.Object3D();
     var bassmain = new THREE.Object3D();
@@ -151,7 +122,6 @@ function Createbass(){
     bass.add(connectmeshR);
     bass.add(connectmeshL);
     bass.position.set(10, 60, 10);
-    
     return bass;
 }
 function Createdrum(){
@@ -190,7 +160,7 @@ function Createdrum(){
         buttonMesh.position.y = -5.5;
         buttonMesh.castShadow = true; buttonMesh.receiveShadow = true;
         
-        //////////////////////
+        //////////////////////////////////////////////////////////////
         var extrudeSettingsButton = {
             amount: 6,
             steps: 1,
@@ -252,9 +222,7 @@ function Createdrum(){
         standsup2mesh.castShadow = true; standsup2mesh.receiveShadow = true;
         standsup3mesh.position.set( -16.5, -90, -14);
         standsup3mesh.rotation.y = 2.5;
-        standsup3mesh.castShadow = true; standsup3mesh.receiveShadow = true;
-        
-    
+        standsup3mesh.castShadow = true; standsup3mesh.receiveShadow = true; 
         standbutton.add(standsup1mesh);
         standbutton.add(standsup2mesh);
         standbutton.add(standsup3mesh);
@@ -299,10 +267,10 @@ function Createdrum(){
     var axismesh = new THREE.Mesh(axisgeometry, axismaterial);
     axismesh.castShadow = true; axismesh.receiveShadow = true;
     var axis = new THREE.Object3D();
-        maindrum.position.set(0, 47.5, 0);
-        axis.add(axismesh);
-        axis.add(standtop);
-        axis.add(maindrum);
+    maindrum.position.set(0, 47.5, 0);
+    axis.add(axismesh);
+    axis.add(standtop);
+    axis.add(maindrum);
     axis.position.set(0 ,-50 ,0);
     axis.quaternion.setFromEuler(new THREE.Euler(0.25, 0, -0.1, 'XZY'));
     drum.add(axis);
@@ -531,8 +499,7 @@ function init(){
     renderer.shadowMapEnabled = true;
     //renderer.shadowMap.type =  THREE.BasicShadowMap;
     renderer.shadowMapType = THREE.PCFShadowMap;
-	  
-  
+
     scene = new THREE.Scene();
     var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
     //scene.add(grid);
@@ -544,18 +511,30 @@ function init(){
     camera.lookAt(new THREE.Vector3(0,0,0));
  
     controls=new THREE.OrbitControls(camera,renderer.domElement);
-   
     var drum=Createbass();
     var drum2=Createdrum();
     var hihat=Createhihat();
     var bassstep=BassStepMesh();
     scene.add(drum,drum2,hihat,bassstep);
-   
+	
+	 var connectstickgeometry = new THREE.BoxGeometry(3, 5, 4);
+    var connectstickmaterail = new THREE.MeshPhongMaterial({color:0xffffff});
+    var connectstick = new THREE.Mesh(connectstickgeometry, connectstickmaterail);
+    connectstick.castShadow = true; connectstick.receiveShadow = true;
+    connectstick.position.set(-1.5, 2, 2);
+	scene.add(connectstick);
+
+    var stickgeometry = new THREE.CylinderGeometry(1, 1, 30, 64);
+    var stickmaterail = new THREE.MeshPhongMaterial({color:0xffffff});
+    var stick = new THREE.Mesh(stickgeometry, stickmaterail);
+    stick.castShadow = true; stick.receiveShadow = true;
+    stick.position.set(-1.5, 15, 2);   
+    scene.add(stick);
+	
    //var spotLightHelper = new THREE.SpotLightHelper( spotLight2 );
    //scene.add( spotLightHelper );
-   
-        for(var i = 0 ; i < 1; i++){
-        light = new THREE.SpotLight(0xffffff, 2);
+     for(var i = 0 ; i < 1; i++){
+        light = new THREE.SpotLight(0xffffff, 1);
         light.exponent = 20;
         light.castShadow = true;
         light.shadowCameraNear = 200;
@@ -568,11 +547,9 @@ function init(){
         lightarray.push(light);
     }
     for(var i = 0; i < lightarray.length; i++){
-    lightarray[i].position.set(-200+i, 500, 400);
+    lightarray[i].position.set(-100, 500, 400);
     scene.add(lightarray[i]);
- 
     }
-  
 	
     var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800, 30, 30),
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('floor.jpg')}));

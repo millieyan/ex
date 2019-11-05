@@ -54,8 +54,11 @@ function Createring(){
     color: 0xB49C6D,
     roughness: 0.55,
     metalness: 1,
- 
 } );
+    let loader = new THREE.TextureLoader();
+    loader.crossOrigin = '';
+    texture = loader.load('drum/wood.jpg');
+	alpha = loader.load('drum/a.jpg');
 	var texMat2 = new THREE.MeshPhongMaterial({
     map: texture,
     side: THREE.DoubleSide
@@ -67,13 +70,11 @@ function Createring(){
    var geometry2 = new THREE.CylinderGeometry( 0.2, 0.2, 12, 32 );
    var cylinder3 = new THREE.Mesh( geometry2, texMat2 );
    cylinder3.position.y = cylinder.position.y -3;
-   ring.add(cylinder,cylinder2,cylinder3)
+   ring.add(cylinder,cylinder2,cylinder3);
+   cylinder.castShadow = true;
     return ring;
 }
-    let loader = new THREE.TextureLoader();
-    loader.crossOrigin = '';
-    texture = loader.load('drum/wood.jpg');
-	alpha = loader.load('drum/a.jpg');
+  
 	
 function Createbody(){
 	var geometry = new THREE.CylinderGeometry(80, 80, 20, 64, 1, true);
