@@ -36,11 +36,12 @@
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
 	</script>
 	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="https://rawgit.com/jyunming-chen/tutsplus/master/js/KeyboardState.js"></script>
 	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
 <script>
-var camera, scene, renderer;
+var camera, scene, renderer,car;
 var theObject;
 var mouseX = 0,
     mouseY = 0;
@@ -48,8 +49,11 @@ var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
 var controls;
 var bs;
-var modelName;
 var theModel;
+var angle = 0;
+var keyboard = new KeyboardState();
+var stats;
+
 
 init();
 animate();
@@ -70,7 +74,7 @@ function init() {
   scene.add(ambient);
 	
   gridxz = new THREE.GridHelper (200, 20,'red','black');
-  scene.add (gridxz);
+  //scene.add (gridxz);
   let axis = new THREE.AxesHelper (20);
  // scene.add (axis);
   	
@@ -82,7 +86,13 @@ function init() {
   scene.add (pointLight);
 	
   window.addEventListener('resize', onWindowResize, false);
- readModel(); 
+  readModel();
+  
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(600, 600, 30, 30),
+  new THREE.MeshLambertMaterial({color: 0x999999, side: THREE.DoubleSide}));
+  floor.rotation.x = -Math.PI / 2;
+  scene.add(floor);
+  floor.receiveShadow = true;
   ///////////////////////////////////////////////////////////////////	
 function onWindowResize() {
 	  windowHalfX = window.innerWidth / 2;
@@ -113,14 +123,32 @@ function readModel (modelName, targetSize=40) {
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
 		scene.add (theObject);
-		theObject.position.set(0,8,0);
-	//	theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, 0, -3.1416/2, 'ZYX'))
+		theObject.position.set(0,8.5,0);
+	    //theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, 0, -3.1416/2, 'ZYX'))
     }, onProgress, onError);
   });
+  /*  theObject.speed = 0.1;
+    theObject.angle = 0.0;
+	
+    update(dt){
+    keyboard.update();
+    if (keyboard.pressed("up"))
+      theObject.speed += 0.5;
+    if (keyboard.pressed("down"))
+      theObject.speed -= 0.5;
+    if (keyboard.pressed("left"))
+      theObject.angle += 0.05;
+    if (keyboard.pressed("right"))
+     theObject.angle -= 0.05;
+    theObject.speed = Math.min(Math.max(theObject.speed, -50.0), 50.0);
+    theObject.body.position.add(new THREE.Vector3(theObject.speed, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), theObject.angle).multiplyScalar(dt));
+    theObject.body.rotation.y = theObject.angle;
+  }
+  */
 }
 
 function unitize (object, targetSize) {  
-	// find bounding box of 'object'
+	
 	var box3 = new THREE.Box3();
 	box3.setFromObject (object);
 	var size = new THREE.Vector3();
@@ -144,6 +172,9 @@ function unitize (object, targetSize) {
 			
 }
 function animate() {
+ // let dt = clock.getDelta();
+  //car.update(dt);
+ // stats.update();
   requestAnimationFrame(animate);
   render();
 }
