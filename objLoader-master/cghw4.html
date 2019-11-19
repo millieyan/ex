@@ -39,6 +39,44 @@
 	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
+
+<script type="x-shader/x-fragment" id="fragmentShaderDepth">
+    uniform sampler2D texture;
+    varying vec2 vUV;
+
+    vec4 pack_depth(const in float depth) {
+
+        const vec4 bit_shift = vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0);
+        const vec4 bit_mask = vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+        vec4 res = fract(depth * bit_shift);
+        res -= res.xxyz * bit_mask;
+        return res;
+
+    }
+
+    void main() {
+
+        vec4 pixel = texture2D(texture, vUV);
+
+        if (pixel.a < 0.5) discard;
+
+        gl_FragData[0] = pack_depth(gl_FragCoord.z);
+
+    }
+</script>
+<script type="x-shader/x-vertex" id="vertexShaderDepth">
+    varying vec2 vUV;
+
+    void main() {
+
+        vUV = 1.0 * uv;
+
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+        gl_Position = projectionMatrix * mvPosition;
+
+    }
+</script>
 <script>
 var camera, scene, renderer,car;
 var theObject;
@@ -95,6 +133,7 @@ function Createpenholder(){
   });
 	mesh = new THREE.Mesh(geometry, material);
 	mesh.position.set(0,5,0);
+	mesh.rotation.y=Math.PI/2;
 	return mesh;
 }
 function Createdrink() {
@@ -252,15 +291,15 @@ function init() {
   var material = new THREE.MeshBasicMaterial( {color: 0x000000} );
   var remotecontrol = new THREE.Mesh( geometry, material );
   scene.add( remotecontrol );
-  remotecontrol.position.set(-80,45,-50)
+  remotecontrol.position.set(-80,43,-50)
   objects = new THREE.Group();
   let cube = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}));
   cube.name = 'cube'
-  cube.position.set (-77,46,-50)
+  cube.position.set (-77,44,-50)
 
   let sphere = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}))
   sphere.name = 'sphere'
-  sphere.position.set (-83,46,-50)
+  sphere.position.set (-83,44,-50)
 
   objects.add (cube, sphere);
   scene.add (objects);
