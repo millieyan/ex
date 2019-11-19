@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+	body {
+	  font-family: Monospace;
+	  background-color: #000;
+	  color: #fff;
+	  margin: 0px;
+	  overflow: hidden;
+	}
+	#info {
+	  color: #000;
+	  position: absolute;
+	  top: 10px;
+	  width: 100%;
+	  text-align: center;
+	  z-index: 100;
+	  display: block;
+	}
+	#info a,
+	.button {
+	  color: #f00;
+	  font-weight: bold;
+	  text-decoration: underline;
+	  cursor: pointer
+	}
+</style>
+</head>
+
+<body> 
+	<div id="info">hw4</div>
+	<script src="https://threejs.org/build/three.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+	</script>
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="https://rawgit.com/jyunming-chen/tutsplus/master/js/KeyboardState.js"></script>
+	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
+<script>
+var camera, scene, renderer,car;
+var theObject;
+var mouseX = 0,
+    mouseY = 0;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var controls;
+var raycaster;
+var mouse = new THREE.Vector2();
+var pickables = [];
+var objects;
+var theModel;
+var angle = 0;
+var keyboard = new KeyboardState();
+var stats;
+var lightsOff = false;
+var lightsbOff = false;
+
+function Createtable() {
+  var table = new THREE.Object3D();
+  var mat = new THREE.MeshPhongMaterial({
+    color: 0x3D1F00
+  });
+  var body = new THREE.Mesh(new THREE.BoxGeometry(70, 5, 120), mat);
+  var f1 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  var f2 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  var f3 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  var f4 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  table.add(body);
+  table.add(f1, f2, f3, f4);
+  body.position.set(-60, 40, 0);
+  f1.position.set(-92.5, 20,57.5);
+  f2.position.set(-92.5, 20, -57.5);
+  f3.position.set(-27.5, 20, 57.5);
+  f4.position.set(-27.5, 20, -57.5);
+  
+  table.traverse((e) => {
+  	if(e instanceof THREE.Mesh){
+    	e.castShadow = true;
+      e.receiveShadow = true;
+    }
+  })
+  return table;
+}
+function Createpenholder(){
+	var geometry = new THREE.CylinderGeometry(5, 5, 10, 64, 1, true);
+	var loader2 = new THREE.TextureLoader();
+	var colorMap = loader2.load('background2-cutout.png');
+	var material = new THREE.MeshBasicMaterial({
+    map: colorMap,
+    alphaTest: 0.5,
+    side: THREE.DoubleSide
+  });
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(0,5,0);
+	return mesh;
+}
+function Createdrink() {
+  var met = new THREE.MeshNormalMaterial();
+  let loader = new THREE.TextureLoader()
+  loader.crossOrigin = '';
+  let texture = loader.load('drink.jpeg');
+  texture.repeat.set(1, 1);
+  let matArray = [];
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    color: 0xA9A9A9
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    color: 0xA9A9A9
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  let allMaterial = new THREE.MultiMaterial(matArray);
+  var boxGeometry = new THREE.BoxGeometry(7, 10, 9);
+  var box = new THREE.Mesh(boxGeometry, allMaterial);
+  box.position.copy(new THREE.Vector3(-81,48,6));
+  return box;
+  }
+init();
+animate();
+function init() {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+  renderer.setClearColor (0xffffff);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+  camera.position.z = 100;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  scene = new THREE.Scene();
+  var ambient = new THREE.AmbientLight(0x444444);
+  scene.add(ambient);
+  
+  gridxz = new THREE.GridHelper (200, 20,'red','black');
+  //scene.add (gridxz);
+  let axis = new THREE.AxesHelper (20);
+ // scene.add (axis);
+ 
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  
+  var directionalLight = new THREE.DirectionalLight(0xffffff);
+  directionalLight.position.set(0, 0, 1).normalize();
+ // scene.add(directionalLight);
+ 
+  var pointLight = new THREE.PointLight (0xffffff,0.7);
+  pointLight.position.set (100,200,-100);
+  pointLight.castShadow = true;
+  scene.add (pointLight);
+  
+  var light = new THREE.PointLight(0xffffff, 0.5);
+  light.castShadow = true;
+  light.position.set(-85,70,40);
+  light.shadow.mapSize.width = 1024;
+  light.shadow.mapSize.height = 1024;
+  light.shadow.camera.near = 3;
+  light.shadow.camera.far = 130;
+  light.shadow.camera.fov = light.angle / Math.PI * 180 ;
+  scene.add(light);
+  
+  var sphereSize = 1;
+  var pointLightHelper = new THREE.PointLightHelper( light, sphereSize );
+ // scene.add( pointLightHelper )
+///////////////////////////////////////////////////////////////////  
+  window.addEventListener('resize', onWindowResize, false);
+  readModel();
+  readModel2();
+  readModel3();
+  readModel4();
+  readModel5();
+  readModel6();
+  readModel7();
+  var table = Createtable();
+  scene.add(table);
+ 
+  var penholder=Createpenholder();
+  scene.add(penholder);
+  penholder.position.set(-80,48,20);
+  penholder.castShadow = true;
+  penholder.receiveShadow = true;
+  
+  var drink= Createdrink();
+  scene.add(drink);
+  drink.castShadow = true;
+  drink.receiveShadow = true;
+////////////////////////////////////////////////////////////////////////////
+  var geometry = new THREE.CircleGeometry( 5, 32 );
+  var material = new THREE.MeshBasicMaterial( { color: 0xD0B887, side: THREE.DoubleSide } );
+  var circle = new THREE.Mesh( geometry, material );
+  circle.position.set(-80,43,20);
+  circle.rotation.x=-Math.PI/2;
+  scene.add( circle );
+////////////////////////////////////////////////////////////////////////////
+    var drink2 = new THREE.Mesh(new THREE.PlaneGeometry(7, 5.2, 30, 30),
+    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
+	drink2.rotation.x =Math.PI / 3;
+	drink2.position.set(-81,54.3,3.65);
+	var drink3 = new THREE.Mesh(new THREE.PlaneGeometry(7, 5.2, 30, 30),
+    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
+	drink3.rotation.x =-Math.PI / 3;
+	drink3.position.set(-81,54.3,8.3);
+	var drink4 = new THREE.Mesh(new THREE.PlaneGeometry(7, 3, 30, 30),
+    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
+	//drink4.rotation.x =-Math.PI / 3;
+	drink4.position.set(-81,55.2,5.975);
+    scene.add(drink2,drink3,drink4);
+	var triangleGeometry = new THREE.Geometry(); 
+	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, 1.7, 0.95)); 
+	triangleGeometry.vertices.push(new THREE.Vector3(-5.5, -1, 0.95)); 
+	triangleGeometry.vertices.push(new THREE.Vector3( 3.5, -1, 0.95));
+	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, 1.5, 1.2)); 
+	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, -1.5, 1.2)); 
+	triangleGeometry.vertices.push(new THREE.Vector3( 1.0, -1.5, 1.2));
+	triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+	triangleGeometry.faces.push(new THREE.Face3(3, 4, 5));
+	triangleGeometry.faces.push(new THREE.Face3(0, 2, 5));
+	triangleGeometry.faces.push(new THREE.Face3(0, 3, 5));
+	var triangleMaterial = new THREE.MeshBasicMaterial({ 
+	color:0x228B22, 
+	side:THREE.DoubleSide 
+	});
+
+	var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial); 
+	triangleMesh.position.set(-85.47,54,5); 
+	triangleMesh.rotation.y=Math.PI/2;
+	var triangleMesh2 = new THREE.Mesh(triangleGeometry, triangleMaterial); 
+	triangleMesh2.position.set(-78.6,54,5); 
+	triangleMesh2.rotation.y=Math.PI/2;
+	scene.add(triangleMesh,triangleMesh2); 
+/////////////////////////////////////////////////////////////////////////		
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 30, 30),
+  new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('floor.jpg')}));
+  floor.rotation.x = -Math.PI / 2;
+  scene.add(floor);
+  floor.receiveShadow = true;
+  ///////////////////////////////////////////////////////////////////
+  var geometry = new THREE.BoxGeometry( 15, 2, 7 );
+  var material = new THREE.MeshBasicMaterial( {color: 0x000000} );
+  var remotecontrol = new THREE.Mesh( geometry, material );
+  scene.add( remotecontrol );
+  remotecontrol.position.set(-80,45,-50)
+  objects = new THREE.Group();
+  let cube = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}));
+  cube.name = 'cube'
+  cube.position.set (-77,46,-50)
+
+  let sphere = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}))
+  sphere.name = 'sphere'
+  sphere.position.set (-83,46,-50)
+
+  objects.add (cube, sphere);
+  scene.add (objects);
+  pickables = [ objects ];
+
+  raycaster = new THREE.Raycaster();
+  document.addEventListener('mousedown', onDocumentMouseDown, false);
+  document.addEventListener('mousemove', onDocumentMouseOver, false);
+  /////////////////////////////////////////////////////////////////////////
+function onWindowResize() {
+	  windowHalfX = window.innerWidth / 2;
+	  windowHalfY = window.innerHeight / 2;
+	  camera.aspect = window.innerWidth / window.innerHeight;
+	  camera.updateProjectionMatrix();
+	  renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+function onDocumentMouseDown(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // find intersections
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(pickables, true);
+  if (intersects.length > 0&&intersects[0].object.name=='cube') {
+   lightsOff = !lightsOff;
+   if (lightsOff) {
+    light.intensity = 0;
+   } else {
+    light.intensity = .5;
+   }   
+}
+  else if (intersects.length > 0&&intersects[0].object.name=='sphere') {
+   lightsbOff = !lightsbOff;
+   if (lightsbOff) {
+    pointLight.intensity = 0;
+   } else {
+    pointLight.intensity = .5;
+   }   
+}
+}
+function onDocumentMouseOver(event) {
+  event.preventDefault();  // may not be necessary
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // find intersections
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(pickables, true);
+  if (intersects.length > 0) {
+    document.body.style.cursor = 'pointer';
+  } else {
+    document.body.style.cursor = 'auto';
+  }
+
+}
+}
+
+
+function readModel (modelName, targetSize=60) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('WoodChair.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+
+    objLoader.load('WoodChair.obj', function(object) {
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(0,30,0);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/2, 0,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel2 ( targetSize=35) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Desk lamp.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Desk lamp.obj', function(object) {
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+	    theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-76,60,35);
+	    theObject.setRotationFromEuler (new THREE.Euler (0, 3.1416/4,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel3 (targetSize=15) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Fountain pen.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Fountain pen.obj', function(object) {
+		let theObject =  unitize3 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-80,50,21);
+	    theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, 3.1416/4,-3.1416/2, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel4 (targetSize=13) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Mug.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Mug.obj', function(object) {
+		let theObject =  unitize4 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+	    theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-59,47,-31);
+	    theObject.setRotationFromEuler (new THREE.Euler (0, 0,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel5 (targetSize=33) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Laptop.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Laptop.obj', function(object) {
+		let theObject =  unitize5 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-50,51,-1);
+	    theObject.setRotationFromEuler (new THREE.Euler (0, 3.1416,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel6 (targetSize=11) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('phone.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('phone.obj', function(object) {
+		let theObject =  unitize6 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-43,42.5,31);
+	    theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, -3.1416/2,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel7 (targetSize=15) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Pencil.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Pencil.obj', function(object) {
+		let theObject =  unitize7 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-78,52,17);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/4,-3.1416/4,3.1416/8, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function unitize (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function unitize2 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;
+			
+}
+function unitize3 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	return theObject;		
+}
+function unitize4 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;
+			
+}
+function unitize5 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function unitize6 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function unitize7 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function animate() {
+ // let dt = clock.getDelta();
+  //car.update(dt);
+ // stats.update();
+  requestAnimationFrame(animate);
+  render();
+}
+function render() {
+  renderer.render(scene, camera);
+}
+</script>
+</body>
+
+</html>
