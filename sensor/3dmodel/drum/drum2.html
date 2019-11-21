@@ -1,12 +1,18 @@
-  
 <!DOCTYPE html>
 <html>
     <title>drum</title>
     <div id="area"></div> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.min.js">
-	</script>
+   <script src="https://threejs.org/build/three.min.js"></script>
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
 	</script>
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+
 <script>
 function Createbass(){
     var bass  = new THREE.Object3D();
@@ -486,6 +492,7 @@ function BassStepMesh(){
 }
 var renderer, scene, camera, controls;
 var lightarray = [];
+var body,head;
 init();
 animate();
 function init(){
@@ -499,42 +506,26 @@ function init(){
     renderer.shadowMapEnabled = true;
     //renderer.shadowMap.type =  THREE.BasicShadowMap;
     renderer.shadowMapType = THREE.PCFShadowMap;
-
     scene = new THREE.Scene();
     var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
     //scene.add(grid);
     var axes=new THREE.AxisHelper(5);
     //scene.add(axes);
-  
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
     camera.position.set(200, 250, 500); 
     camera.lookAt(new THREE.Vector3(0,0,0));
- 
     controls=new THREE.OrbitControls(camera,renderer.domElement);
     var drum=Createbass();
     var drum2=Createdrum();
     var hihat=Createhihat();
     var bassstep=BassStepMesh();
     scene.add(drum,drum2,hihat,bassstep);
-	
-	 var connectstickgeometry = new THREE.BoxGeometry(3, 5, 4);
-    var connectstickmaterail = new THREE.MeshPhongMaterial({color:0xffffff});
-    var connectstick = new THREE.Mesh(connectstickgeometry, connectstickmaterail);
-    connectstick.castShadow = true; connectstick.receiveShadow = true;
-    connectstick.position.set(-1.5, 2, 2);
-	scene.add(connectstick);
-
-    var stickgeometry = new THREE.CylinderGeometry(1, 1, 30, 64);
-    var stickmaterail = new THREE.MeshPhongMaterial({color:0xffffff});
-    var stick = new THREE.Mesh(stickgeometry, stickmaterail);
-    stick.castShadow = true; stick.receiveShadow = true;
-    stick.position.set(-1.5, 15, 2);   
-    scene.add(stick);
-	
+	readModel();
+    readModel2();
    //var spotLightHelper = new THREE.SpotLightHelper( spotLight2 );
    //scene.add( spotLightHelper );
      for(var i = 0 ; i < 1; i++){
-        light = new THREE.SpotLight(0xffffff, 1);
+        light = new THREE.SpotLight(0xffffff, 1.5);
         light.exponent = 20;
         light.castShadow = true;
         light.shadowCameraNear = 200;
@@ -548,6 +539,8 @@ function init(){
     }
     for(var i = 0; i < lightarray.length; i++){
     lightarray[i].position.set(-100, 500, 400);
+	lightarray[i].castShadow = true;
+	lightarray[i].receiveShadow = true;
     scene.add(lightarray[i]);
     }
 	
@@ -558,8 +551,85 @@ function init(){
     floor.castShadow = true;
 	floor.receiveShadow = true;
 }
+function readModel (targetSize=70) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Drum_Stick.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Drum_Stick.obj', function(object) {
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-82.5,140,150);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+
+function readModel2 ( targetSize=70) {
+    var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Drum_Stick.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Drum_Stick.obj', function(object) {
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-67.5,140,150);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function unitize (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+
 function animate() {
- controls.update();
+    controls.update();
 	requestAnimationFrame(animate);
 	render();
 }

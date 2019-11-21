@@ -551,33 +551,34 @@ function init(){
     floor.castShadow = true;
 	floor.receiveShadow = true;
 }
-function readModel ( targetSize=70) {
-    var onProgress = function(xhr) {
+function readModel (targetSize=70) {
+  var onProgress = function(xhr) {
     if (xhr.lengthComputable) {
       var percentComplete = xhr.loaded / xhr.total * 100;
       console.log(Math.round(percentComplete, 2) + '% downloaded');
     }
   };
-    var onError = function(xhr) {};
-    var mtlLoader = new THREE.MTLLoader();
-    mtlLoader.setPath('models/');
-    mtlLoader.load('Drum_Stick.mtl', function(materials) {
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Drum_Stick.mtl', function(materials) {
     materials.preload();
     var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
     objLoader.setPath('models/');
     objLoader.load('Drum_Stick.obj', function(object) {
-	   head =  unitize (object, targetSize);
-		head.name = 'OBJ'
-		head.position.set(-82.5,140,150);
-        head.rotation.x=-Math.PI/3;
-		head.castShadow = true;
-		head.receiveShadow = true;
-        scene.add(head);
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-82.5,140,150);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
 }
-////2
+
 function readModel2 ( targetSize=70) {
     var onProgress = function(xhr) {
     if (xhr.lengthComputable) {
@@ -585,22 +586,23 @@ function readModel2 ( targetSize=70) {
       console.log(Math.round(percentComplete, 2) + '% downloaded');
     }
   };
-    var onError = function(xhr) {};
-    var mtlLoader = new THREE.MTLLoader();
-    mtlLoader.setPath('models/');
-    mtlLoader.load('Drum_Stick.mtl', function(materials) {
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Drum_Stick.mtl', function(materials) {
     materials.preload();
     var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
     objLoader.setPath('models/');
     objLoader.load('Drum_Stick.obj', function(object) {
-	    body=  unitize (object, targetSize);
-		body.name = 'OBJ'
-        body.position.set(-67.5,140,150)
-		body.rotation.x=-Math.PI/3;
-	    body.castShadow = true;
-		body.receiveShadow = true;
-        scene.add(body);
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		scene.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-67.5,140,150);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
 }
@@ -611,15 +613,21 @@ function unitize (object, targetSize) {
 	size.subVectors (box3.max, box3.min);
 	var center = new THREE.Vector3();
 	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
 	var objSize = Math.max (size.x, size.y, size.z);
 	var scaleSet = targetSize/objSize;
+				
 	var theObject =  new THREE.Object3D();
 	theObject.add (object);
 	object.scale.set (scaleSet, scaleSet, scaleSet);
 	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
-	return theObject;
-			
+	
+	return theObject;		
 }
+
 function animate() {
     controls.update();
 	requestAnimationFrame(animate);
