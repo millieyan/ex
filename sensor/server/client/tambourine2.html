@@ -1,48 +1,11 @@
 <!DOCTYPE html>
 <html>
-    <div id="info">ring</div>
+<div id="info">ring</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/107/three.min.js"></script>
 <script src='https://millieyan.github.io/ex/WebAudio/js/shared.js'></script>
 <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 
-<script type="x-shader/x-fragment" id="fragmentShaderDepth">
-    uniform sampler2D texture;
-    varying vec2 vUV;
-
-    vec4 pack_depth(const in float depth) {
-
-        const vec4 bit_shift = vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0);
-        const vec4 bit_mask = vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
-        vec4 res = fract(depth * bit_shift);
-        res -= res.xxyz * bit_mask;
-        return res;
-
-    }
-
-    void main() {
-
-        vec4 pixel = texture2D(texture, vUV);
-
-        if (pixel.a < 0.5) discard;
-
-        gl_FragData[0] = pack_depth(gl_FragCoord.z);
-
-    }
-</script>
-<script type="x-shader/x-vertex" id="vertexShaderDepth">
-    varying vec2 vUV;
-
-    void main() {
-
-        vUV = 1.0 * uv;
-
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-
-        gl_Position = projectionMatrix * mvPosition;
-
-    }
-</script>
 <script>
 var socket = io(location.host);
 socket.on('Phone_to_THREE',function(msg){
@@ -61,9 +24,9 @@ function Createring(){
 	var geometry = new THREE.CylinderGeometry( 2.4, 12, 0.05, 32 );
    geometry.openEnded = true;
 	var material = new THREE.MeshStandardMaterial( {
-    color: 0xFFC355,
-    roughness: 0.3,
-    metalness: 0.8,
+    color: 0xB49C6D,
+    roughness: 0.55,
+    metalness: 1,
 } );
     let loader = new THREE.TextureLoader();
     loader.crossOrigin = '';
@@ -201,20 +164,7 @@ function init() {
     sidemap = THREE.ImageUtils.loadTexture('https://millieyan.github.io/ex/drum/background2-cutout.png');
 
     ///////////////////////////////////////////////////////////////////
-    var uniforms = {
-        texture: {
-            type: "t",
-            value: sidemap
-        }
-    };
-    var vertexShader = document.getElementById('vertexShaderDepth').textContent;
-    var fragmentShader = document.getElementById('fragmentShaderDepth').textContent;
-		body.customDepthMaterial = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader
-    });
-
+   
     ////////////////////////////////////////////////////////
 	
     spotLight = new THREE.SpotLight(0xffffff, 0.75);
