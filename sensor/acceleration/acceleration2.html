@@ -18,7 +18,7 @@ var yy = 0;
 $('#play').click ( function() {
    console.log ('hit toggle');
    //mute = !mute;
-   //playSound2 (sample.click, 0, 1);\
+   //playSound2 (sample.click, 0, 1);
    playClick();
 });
 $('#play2').click ( function() {
@@ -73,7 +73,6 @@ function playClick3() {
     playSound2(sample.hihat, 0, 1);  // time = 0: start immediately
 }
 function init() {
-
   renderer = new THREE.WebGLRenderer({
     antialias: true
   });
