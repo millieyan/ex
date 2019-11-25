@@ -78,7 +78,7 @@ function init() {
   });
 
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x888888);
+  renderer.setClearColor(0xffffff);
   document.body.appendChild(renderer.domElement);
 
   scene = new THREE.Scene();
@@ -87,7 +87,7 @@ function init() {
 
   grid = new THREE.GridHelper(100, 10, 'red', 'white');
   grid.rotation.x = Math.PI / 2
-  scene.add(grid)
+  //scene.add(grid)
   /////////////////////////////////////////////////////////
     plot = createNewLine(new THREE.Vector3());
 	plot.frustumCulled = false;
@@ -134,7 +134,7 @@ function addPoint(myPoint) {
 }
 
 function animate() {
-  xx += 0.5;
+ /* xx += 0.5;
     if(y>-0.01){
 	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
@@ -153,7 +153,7 @@ function animate() {
 	}
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
-   }
+   }*/
    if (y>4&&y<7) {
      playClick2();
    }

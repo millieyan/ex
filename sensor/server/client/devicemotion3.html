@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+    <meta charset="UTF-8">
 	<title>偵測裝置方向</title>
 	<div id="info">Gyroscope</div>
-	<h2>gamma:<span id="accelerationg"></span><br/>beta:<span id="accelerationb"></span><br/></h2>
-	<div><button id='play' style="display: block"> Play</button></div><br/>
-	<div><button id='play2' style="display: block"> Play2</button></div>
-</head>
+	<h2>gamma:<span id="accelerationg"></span><br/>
+    beta:<span id="accelerationb"></span><br/></h2>
+	<div><button id='play' style="display: block"> SHAKE</button></div><br/>
+	<div><button id='play2' style="width:200px;height:200px;font-size:20px;border:2px #9999FF;background-color:#CC0000;border-radius:50%;"> HIT</button></div>
+	</head>
 <script src="https://threejs.org/build/three.min.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src='https://millieyan.github.io/ex/WebAudio/js/shared.js'></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
 /////////////////////////////////////////////////////////////////////////////////////////
 var mute = false;
@@ -73,7 +73,7 @@ function init() {
   });
 
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x888888);
+  renderer.setClearColor(0xffffff);
   document.body.appendChild(renderer.domElement);
 
   scene = new THREE.Scene();
@@ -82,11 +82,11 @@ function init() {
 
   grid = new THREE.GridHelper(100, 10, 'red', 'white');
   grid.rotation.x = Math.PI / 2
-  scene.add(grid)
+  //scene.add(grid)
   /////////////////////////////////////////////////////////
     plot = createNewLine(new THREE.Vector3());
 	plot.frustumCulled = false;
-	scene.add(plot);
+	//scene.add(plot);
   
 	if(window.DeviceOrientationEvent) {
 		window.addEventListener('deviceorientation', function(event) {
@@ -127,28 +127,17 @@ function addPoint(myPoint) {
 }
 
 function animate() {
-    xx += 0.5;
+    /* xx += 0.5;
 	pt = new THREE.Vector3(xx,Math.round(gammay),0);	
-	addPoint(pt); 
+	//addPoint(pt); 
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
-   }	
-	/*
-	if(gammay>6){
-     playClick();
-	}
-	else if(gammay<-6&&gammay>-6.8){
-     playClick();
-	}
-	*/
+   }*/
 	if(gammay>1.8){
      playClick();
 	}
 	else if(gammay<-1.7&&gammay>-2){
      playClick();
-	}
-   if(betay>2.8){
-     playClick2();
 	}
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);
