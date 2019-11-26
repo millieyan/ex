@@ -7,7 +7,6 @@
 
 
 <script>
-
 function Createring(){
     var ring = new THREE.Object3D();
 	var geometry = new THREE.CylinderGeometry( 2.4, 12, 0.05, 32 );
@@ -77,13 +76,10 @@ var light;
 var spotLight;
 var turn = true;
 var angle = 0;
-
 init();
 animate();
-
 function init() {
     scene = new THREE.Scene();
-
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
     camera.position.z = 500;
 	
@@ -97,7 +93,6 @@ function init() {
    var ring6=Createring();
    var ring7=Createring();
    var ring8=Createring();
-
    var body=Createbody();
    scene.add(body);
    var top=Createtop();
@@ -118,28 +113,21 @@ function init() {
    //body.rotation.x=Math.PI/2;
    
    ////////////////////////////////////////////////////////
-
     THREE.ImageUtils.crossOrigin = '';
     sidemap = THREE.ImageUtils.loadTexture('https://millieyan.github.io/ex/drum/background2-cutout.png');
-
     ///////////////////////////////////////////////////////////////////
  
-
     ////////////////////////////////////////////////////////
 	
     spotLight = new THREE.SpotLight(0xffffff, 1.3);
     spotLight.position.set(0, 300, 0);
     spotLight.angle = Math.PI / 3
-
     spotLight.castShadow = true;
-
     spotLight.shadowMapWidth = 1024;
     spotLight.shadowMapHeight = 1024;
-
     spotLight.shadowCameraNear = 5;
     spotLight.shadowCameraFar = 4000;
     spotLight.shadowCameraFov = spotLight.angle / Math.PI * 180;
-
     spotLight.exponent = 20;
     spotLight.target = body;
     scene.add(spotLight);
@@ -148,7 +136,6 @@ function init() {
 	light.position.set( 0, 300, 0 ); 			
 	light.castShadow = true; 
 	scene.add( light );
-
 	light.shadow.mapSize.width = 512;  
 	light.shadow.mapSize.height = 512; 
 	light.shadow.camera.near = 0.5;    
@@ -179,19 +166,15 @@ function init() {
 	renderer.shadowMapCullFrontFaces = false;
     
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-
     document.body.appendChild(renderer.domElement);
 }
-
 function animate() {
     requestAnimationFrame(animate);
     render();
 }
-
 function render() {
     renderer.render(scene, camera);
 }
-
 window.focus();
 </script>
 </html>

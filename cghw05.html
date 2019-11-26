@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
 <html>
-
 <head>
 <style>
 #info {
@@ -44,7 +43,7 @@ body {
   uniform int shading;
   uniform int coordinate;
   varying vec3 color;
-	
+  
   void perVertexShading(vec3 objpos, vec3 worldpos) {
     if (coordinate == 0) {
   	  if (objpos.x > 0.0) 
@@ -152,9 +151,6 @@ function init() {
 
 function animate() {
   angle += 0.01;
-
-  // update the uniform variable
-  
   if (movingTeapot !== undefined) {
 	movingTeapot.position.set (70*Math.cos(angle), 0, 70*Math.sin(angle));
   }
