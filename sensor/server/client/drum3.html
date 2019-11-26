@@ -516,11 +516,9 @@ var lightarray = [];
 var body,head;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
-
 initAudio();
 init();
 animate();
-
 function initAudio () {
 	sample = new RhythmSample();
 	sample2 = new RhythmSample();
@@ -635,7 +633,6 @@ function readModel (targetSize=70) {
     }, onProgress, onError);
   });
 }
-
 function readModel2 ( targetSize=70) {
     var onProgress = function(xhr) {
     if (xhr.lengthComputable) {
@@ -684,7 +681,6 @@ function unitize (object, targetSize) {
 	
 	return theObject;		
 }
-
 function animate() {
     controls.update();
 	requestAnimationFrame(animate);

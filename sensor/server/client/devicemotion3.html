@@ -12,6 +12,7 @@
 <script src="https://threejs.org/build/three.min.js"></script>
 <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src='https://millieyan.github.io/ex/WebAudio/js/shared.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
 /////////////////////////////////////////////////////////////////////////////////////////
 var mute = false;
@@ -106,17 +107,15 @@ function init() {
    console.log ('in interval ...')
   if (!mute) playClick();
  }, 1000000 );
-
 }
 function createNewLine(startingPoint) {
   var geometry = new THREE.Geometry();
   for (let i = 0; i < MAX_LINE_POINTS; i++) {
     geometry.vertices.push(startingPoint.clone());
-  }
-  myLine = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+	}
+   myLine = new THREE.Line(geometry, new THREE.LineBasicMaterial({
     color: 0x222222
   }));
-
   return myLine;
 }
 
