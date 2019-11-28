@@ -4,6 +4,7 @@
 <title>偵測裝置加速度</title>
 <div id="info">Acceleration</div>
 	<h2>x:<span id="accelerationx"><br/></span>z:<span id="accelerationz"></span><br/></h2>
+<div><button id='test' style="display: block">test</button></div><br/>
 <div><button id='play' style="display: block">Play</button></div><br/>
 <div><button id='play2' style="display: block"> Play2</button></div><br/>
 <div><button id='play3' style="display: block"> Play3</button></div>
@@ -65,7 +66,7 @@ function playSound2(buffer, time, intensity) {
     source[source.start ? 'start' : 'noteOn'](time);
 }
 function playClick() {
-socket.emit("Singal_From_Phone",{signal: "drum"});
+socket.emit("Singal_From_Phone",{signal: "drum_left"});
     playSound2(sample.click, 0, 1);  // time = 0: start immediately
 }
 function playClick2() {
@@ -97,17 +98,40 @@ function init() {
     plot = createNewLine(new THREE.Vector3());
 	plot.frustumCulled = false;
   //scene.add(plot);
-  
-    if(window.DeviceOrientationEvent) {
-		window.addEventListener('devicemotion', function(event) {
-			accelerationx = document.getElementById('accelerationx');
-			accelerationz = document.getElementById('accelerationz');
-			y = event.acceleration.x;
-		    z = event.acceleration.z;
-			accelerationx.innerHTML = y.toFixed(2);
-			accelerationz.innerHTML = z.toFixed(2);
-		}, false);
-	}
+  //alert(window.DeviceOrientationEvent);
+	
+	let but = document.getElementById('test');
+	but.addEventListener('click', function(){
+		if(typeof DeviceMotionEvent.requestPermission == 'function'){
+			DeviceMotionEvent.requestPermission().then(function(res){
+				if(res == 'granted'){
+					window.addEventListener('devicemotion', function(event) {
+					accelerationx = document.getElementById('accelerationx');
+					accelerationz = document.getElementById('accelerationz');
+					y = event.acceleration.x;
+					z = event.acceleration.z;
+					
+					accelerationx.innerHTML = y.toFixed(2);
+					accelerationz.innerHTML = z.toFixed(2);
+				}, false);
+				}
+			}).catch(console.error);
+		}
+		else {
+
+				window.addEventListener('devicemotion', function(event) {
+				accelerationx = document.getElementById('accelerationx');
+				accelerationz = document.getElementById('accelerationz');
+				y = event.acceleration.x;
+				z = event.acceleration.z;
+				
+				accelerationx.innerHTML = y.toFixed(2);
+				accelerationz.innerHTML = z.toFixed(2);
+			}, false);
+			
+		}
+	});
+
 ////////////////////////////////////////////////////////////////////////////////
  
  setInterval ( function() {

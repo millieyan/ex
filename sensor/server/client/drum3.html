@@ -18,9 +18,17 @@
 var socket = io(location.host);
 socket.on('Phone_to_THREE',function(msg){
 	console.log('bang');
-	if(msg.signal == 'drum'){
-	 playClick();
+	if(msg.signal == 'drum_left'){
+		playClick();
+		if(time_left <= 0)
+			flag_left = 1;
 	}
+	if(msg.signal == 'drum_right'){
+		playClick();
+		if(time_right <= 0)
+			flag_right = 1;
+	}
+	
 	if(msg.signal == 'drum2'){
 	 playClick2();
 	}
@@ -511,9 +519,9 @@ var RhythmSample = function () {
 		hihat: 'https://jyunming-chen.github.io/WebAudio/hihat.wav'
     });
 };
-var renderer, scene, camera, controls;
+var renderer, scene, camera, controls,clock;
 var lightarray = [];
-var body,head;
+var body,head,lefthit,righthit;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
 initAudio();
@@ -546,6 +554,7 @@ function playClick3() {
     playSound2(sample.hihat, 0, 1);  // time = 0: start immediately
 }
 function init(){
+	clock = new THREE.Clock();
     renderer=new THREE.WebGLRenderer();
     document.body.appendChild(renderer.domElement);
     var width=window.innerWidth;
@@ -622,16 +631,18 @@ function readModel (targetSize=70) {
     objLoader.setMaterials(materials);
     objLoader.setPath('models/');
     objLoader.load('Drum_Stick.obj', function(object) {
-		let theObject =  unitize (object, targetSize);
-		//theObject.add ( new THREE.BoxHelper (theObject) )
-		theObject.name = 'OBJ'
-		scene.add (theObject);
-		theObject.children[0].children[0].castShadow = true;
-		theObject.children[0].children[0].receiveShadow = true;
-		theObject.position.set(-82.5,140,150);
-	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
+		lefthit =  unitize (object, targetSize);
+		//lefthit.add ( new THREE.BoxHelper (lefthit) )
+		lefthit.name = 'OBJ'
+		scene.add (lefthit);
+		lefthit.children[0].children[0].castShadow = true;
+		lefthit.children[0].children[0].receiveShadow = true;
+		//lefthit.position.set(-82.5,140,150);//左小鼓
+		lefthit.position.set(-137.5,180,100);
+	    lefthit.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
+  
 }
 function readModel2 ( targetSize=70) {
     var onProgress = function(xhr) {
@@ -649,14 +660,15 @@ function readModel2 ( targetSize=70) {
     objLoader.setMaterials(materials);
     objLoader.setPath('models/');
     objLoader.load('Drum_Stick.obj', function(object) {
-		let theObject =  unitize (object, targetSize);
-		//theObject.add ( new THREE.BoxHelper (theObject) )
-		theObject.name = 'OBJ'
-		scene.add (theObject);
-		theObject.children[0].children[0].castShadow = true;
-		theObject.children[0].children[0].receiveShadow = true;
-		theObject.position.set(-67.5,140,150);
-	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
+		righthit =  unitize (object, targetSize);
+		//righthit.add ( new THREE.BoxHelper (righthit) )
+		righthit.name = 'OBJ'
+		scene.add (righthit);
+		righthit.children[0].children[0].castShadow = true;
+		righthit.children[0].children[0].receiveShadow = true;
+		//righthit.position.set(-67.5,140,150);//右小鼓
+		righthit.position.set(-120,180,100);
+	    righthit.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
 }
@@ -681,10 +693,43 @@ function unitize (object, targetSize) {
 	
 	return theObject;		
 }
+var flag_left = 0,flag_right = 0, time_left = 0, time_right = 0;
 function animate() {
-    controls.update();
-	requestAnimationFrame(animate);
-	render();
+	var dt = clock.getDelta();
+	
+	//-------左鼓棒動畫
+	if(flag_left === 1 && time_left <= 0){
+		time_left = 0.2;
+	}
+	if(time_left >= 0 && flag_left === 1){
+		if(time_left >= 0.1){
+			lefthit.rotation.x = Math.PI / 4 * ((0.2 - time_left) / 0.1);
+		}
+		else {
+			lefthit.rotation.x = Math.PI / 4 * (time_left / 0.1);
+		}
+		time_left -= dt;
+		if(time_left <= 0)
+			flag_left = 0;
+	}
+	
+	//-------右鼓棒動畫
+	if(flag_right === 1 && time_right <= 0){
+		time_right = 0.2;
+	}
+	if(time_right >= 0 && flag_right === 1){
+		if(time_right >= 0.1){
+			righthit.rotation.x = Math.PI / 4 * ((0.2 - time_right) / 0.1);
+		}
+		else {
+			righthit.rotation.x = Math.PI / 4 * (time_right / 0.1);
+		}
+		time_right -= dt;
+		if(time_right <= 0)
+			flag_right = 0;
+	}
+    requestAnimationFrame(animate);
+    render();
 }
 function render(){
 	renderer.render(scene,camera);

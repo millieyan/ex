@@ -65,7 +65,7 @@ function playSound2(buffer, time, intensity) {
     source[source.start ? 'start' : 'noteOn'](time);
 }
 function playClick() {
-socket.emit("Singal_From_Phone",{signal: "drum"});
+socket.emit("Singal_From_Phone",{signal: "drum_right"});
     playSound2(sample.click, 0, 1);  // time = 0: start immediately
 }
 function playClick2() {

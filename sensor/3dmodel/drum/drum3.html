@@ -490,12 +490,13 @@ function BassStepMesh(){
 	a.rotation.y=Math.PI;
     return a;
 }
-var renderer, scene, camera, controls;
+var renderer, scene, camera, controls,clock;
 var lightarray = [];
 var body,head;
 init();
 animate();
 function init(){
+	clock = new THREE.Clock();
     renderer=new THREE.WebGLRenderer();
     document.body.appendChild(renderer.domElement);
     var width=window.innerWidth;
@@ -520,8 +521,9 @@ function init(){
     var hihat=Createhihat();
     var bassstep=BassStepMesh();
     scene.add(drum,drum2,hihat,bassstep);
-	readModel();
-    readModel2();
+	var lefthit=readModel();
+    var righthit=readModel2();
+	scene.add(lefthit,righthit);
    //var spotLightHelper = new THREE.SpotLightHelper( spotLight2 );
    //scene.add( spotLightHelper );
      for(var i = 0 ; i < 1; i++){
@@ -573,7 +575,8 @@ function readModel (targetSize=70) {
 		scene.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
-		theObject.position.set(-82.5,140,150);
+		//theObject.position.set(-82.5,140,150);//左小鼓
+		theObject.position.set(-137.5,180,100);
 	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
@@ -600,7 +603,8 @@ function readModel2 ( targetSize=70) {
 		scene.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
-		theObject.position.set(-67.5,140,150);
+		//theObject.position.set(-67.5,140,150);//右小鼓
+		theObject.position.set(-120,180,100);
 	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });

@@ -88,7 +88,6 @@ function init() {
     plot = createNewLine(new THREE.Vector3());
 	plot.frustumCulled = false;
 	//scene.add(plot);
-  
 	if(window.DeviceOrientationEvent) {
 		window.addEventListener('deviceorientation', function(event) {
 	    accelerationg = document.getElementById('accelerationg'),
@@ -132,10 +131,10 @@ function animate() {
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
    }*/
-	if(gammay>1.8){
-     playClick();
-	}
-	else if(gammay<-1.7&&gammay>-2){
+
+//alert(gammay);
+ if(gammay<-4.7&&gammay>-5.2){
+
      playClick();
 	}
 	requestAnimationFrame(animate);   

@@ -12,6 +12,8 @@ socket.on('Phone_to_THREE',function(msg){
 	console.log('bang');
 	if(msg.signal == 'ring'){
 	 playClick();
+	 if(time <= 0)
+		flag = 1;
 	}
 	if(msg.signal == 'ring2'){
 	 playClick2();
@@ -85,6 +87,7 @@ var RhythmSample = function () {
 		hand: 'https://millieyan.github.io/ex/WebAudio/hand5.mp3'
     });
 };
+var body,clock;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
 var renderer, scene, camera, controls;
@@ -119,6 +122,7 @@ function playClick2() {
     playSound2(sample.hand, 0, 1);  // time = 0: start immediately
 }
 function init() {
+	clock = new THREE.Clock();
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
     camera.position.z = 500;
@@ -133,7 +137,7 @@ function init() {
    var ring6=Createring();
    var ring7=Createring();
    var ring8=Createring();
-   var body=Createbody();
+   body=Createbody();
    scene.add(body);
    var top=Createtop();
    body.add(top);
@@ -150,6 +154,7 @@ function init() {
    ring7.position.set(-69,2,-37);
    ring8.position.set(-78,2,11);
    body.position.y=50;
+   //body.add(new THREE.AxesHelper(50));
    //body.rotation.x=Math.PI/2;
    
    ////////////////////////////////////////////////////////
@@ -212,7 +217,25 @@ function init() {
 	if (!mute) playClick();
 	}, 1000000 );
 }
+
+var flag = 0, time = 0;
 function animate() {
+	var dt = clock.getDelta();
+	if(flag === 1 && time <= 0){
+		time = 0.2;
+	}
+	
+	if(time >= 0 && flag === 1){
+		if(time >= 0.1){
+			body.rotation.x = Math.PI / 4 * ((0.2 - time) / 0.1);
+		}
+		else {
+			body.rotation.x = Math.PI / 4 * (time / 0.1);
+		}
+		time -= dt;
+		if(time <= 0)
+			flag = 0;
+	}
     requestAnimationFrame(animate);
     render();
 }
