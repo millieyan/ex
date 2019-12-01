@@ -2,6 +2,10 @@
 <html>
     <title>drum</title>
     <div id="area"></div> 
+	<div id  = 'control'>
+    <button id = "reset">Reset </button>
+	<button id = "ready">Ready </button>
+	</div>
    <script src="https://threejs.org/build/three.min.js"></script>
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 	<script src='https://millieyan.github.io/ex/WebAudio/js/shared.js'></script>
@@ -15,6 +19,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
+
 var socket = io(location.host);
 socket.on('Phone_to_THREE',function(msg){
 	console.log('bang');
@@ -35,6 +40,18 @@ socket.on('Phone_to_THREE',function(msg){
 	if(msg.signal == 'drum3'){
 	 playClick3();
 	}
+});
+$('#reset').click(function(){
+	righthit.position.set(-67.5,140,160);
+	righthit.rotation.x=0;
+	lefthit.position.set(-82.5,140,160);
+	lefthit.rotation.x=0;
+});
+$('#ready').click(function(){
+	righthit.position.set(-67.5,140,160);
+	righthit.rotation.x=-Math.PI/3;
+	lefthit.position.set(-82.5,140,160);
+	lefthit.rotation.x=-Math.PI/3;
 });
 function Createbass(){
     var bass  = new THREE.Object3D();
@@ -637,7 +654,7 @@ function readModel (targetSize=70) {
 		scene.add (lefthit);
 		lefthit.children[0].children[0].castShadow = true;
 		lefthit.children[0].children[0].receiveShadow = true;
-		//lefthit.position.set(-82.5,140,150);//左小鼓
+		//lefthit.position.set(-82.5,140,160);//左小鼓
 		lefthit.position.set(-137.5,180,100);
 	    lefthit.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
@@ -666,7 +683,7 @@ function readModel2 ( targetSize=70) {
 		scene.add (righthit);
 		righthit.children[0].children[0].castShadow = true;
 		righthit.children[0].children[0].receiveShadow = true;
-		//righthit.position.set(-67.5,140,150);//右小鼓
+		//righthit.position.set(-67.5,140,160);//右小鼓
 		righthit.position.set(-120,180,100);
 	    righthit.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
@@ -703,10 +720,10 @@ function animate() {
 	}
 	if(time_left >= 0 && flag_left === 1){
 		if(time_left >= 0.1){
-			lefthit.rotation.x = Math.PI / 4 * ((0.2 - time_left) / 0.1);
+			lefthit.rotation.x = Math.PI / 7 * ((0.2 - time_left) / -0.1)-Math.PI/3;
 		}
 		else {
-			lefthit.rotation.x = Math.PI / 4 * (time_left / 0.1);
+			lefthit.rotation.x = Math.PI / 7 * (time_left / -0.1)-Math.PI/3;
 		}
 		time_left -= dt;
 		if(time_left <= 0)
@@ -719,10 +736,10 @@ function animate() {
 	}
 	if(time_right >= 0 && flag_right === 1){
 		if(time_right >= 0.1){
-			righthit.rotation.x = Math.PI / 4 * ((0.2 - time_right) / 0.1);
+			righthit.rotation.x = Math.PI / 4 * ((0.2 - time_right) /- 0.1)-Math.PI/3;
 		}
 		else {
-			righthit.rotation.x = Math.PI / 4 * (time_right / 0.1);
+			righthit.rotation.x = Math.PI / 4 * (time_right / -0.1)-Math.PI/3;
 		}
 		time_right -= dt;
 		if(time_right <= 0)

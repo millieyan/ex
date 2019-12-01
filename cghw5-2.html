@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<style>
+#info {
+  position: absolute;
+  top: 2%;
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+  color: #ffff00
+}
+
+body {
+  overflow: hidden;
+}
+</style>
+</head>
+
+<body> 
+<div id="info">
+  hw5-1 Basic GLSL <br>
+  
+  <select id='coords'>
+  <option value="obj" selected>Object Coordinate</option>
+  <option value="world">World Coordinate</option>
+  <option value="eye">Eye Coordinate</option>
+  </select>
+  
+  <select id='shading'>
+  <option value='perVertex' selected> Per Vertex</option>
+  <option value='perPixel'> Per Pixel </option>
+  </select>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js"></script>
+<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/geometries/TeapotBufferGeometry.js"></script>
+
+<script id="myVertexShader" type="x-shader/x-vertex">
+  uniform int shading;
+  uniform int coordinate;
+  varying vec3 color;
+  varying vec3 pos;
+  varying vec4 worldpos;
+  varying vec4 eyepos;
+  
+  void perVertexShading(vec3 objpos,vec3 worldpos) {
+    if (coordinate == 0) {	//物件
+  	  if (objpos.x > 0.0) 
+    	color = vec3 (1,1,1);
+      else
+    	color = vec3 (0,0,0);
+    } 
+	else if (coordinate == 1) {	//世界
+  	  if (worldpos.x > 0.0) 
+    	color = vec3 (1,1,1);
+      else
+    	color = vec3 (0,0,0);    	
+    }
+	else{	//眼睛
+	  if (eyepos.x > 0.0)
+		color = vec3 (1,1,1);
+	  else 
+		color = vec3 (0,0,0);
+	}
+  }
+  // your homework
+  void perPixelShading() {
+  }
+  
+  void main() {
+   
+	gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0);
+    worldpos = modelMatrix * vec4 (position, 1.0);
+    eyepos =  modelViewMatrix * vec4 (position, 1.0);
+	pos = position;
+
+  	if (shading == 0)  // per-vertex shading
+    	perVertexShading(position, worldpos.xyz);
+    else
+    	perPixelShading();
+  }
+</script>
+
+<script id="myFragmentShader" type="x-shader/x-fragment">
+  uniform int shading;
+  uniform int coordinate;
+  varying vec3 color;
+  varying vec3 pos;
+  varying vec4 worldpos;
+  varying vec4 eyepos;
+  vec3 mycolor;
+  
+	void main() {
+		if(shading ==0){
+		gl_FragColor = vec4(color,1.0);
+		}
+		else{
+		if (coordinate == 0) {
+			if (pos.x > 0.0) 
+				mycolor = vec3 (1,1,1);
+			else
+				mycolor = vec3 (0,0,0);
+			} 
+		else if (coordinate == 1) {
+			if (worldpos.x > 0.0) 
+				mycolor = vec3 (1,1,1);
+			else
+				mycolor = vec3 (0,0,0);    	
+			}
+		else{
+			if (eyepos.x > 0.0)
+				mycolor = vec3 (1,1,1);
+			else 
+				mycolor = vec3 (0,0,0);
+			}
+			gl_FragColor = vec4 (mycolor, 1.0);
+			}
+		}
+	
+</script>
+<script>
+
+$('#coords').change( function() {
+	console.log ( $(this).val() );
+	let objType = $(this).val();
+	if (objType === 'obj') {
+		teapotMaterial.uniforms.coordinate.value = 0;
+	} else if (objType === 'world') {
+		teapotMaterial.uniforms.coordinate.value = 1;
+	}
+	else if (objType === 'eye') {
+		teapotMaterial.uniforms.coordinate.value = 2;
+	}
+});
+
+$('#shading').change( function() {
+	console.log ( $(this).val() );
+	let objType = $(this).val();
+	if (objType === 'perVertex') {
+		teapotMaterial.uniforms.shading.value = 0;
+	} else if (objType === 'perPixel') {
+		teapotMaterial.uniforms.shading.value = 1;
+	}
+});
+
+var scene, renderer, camera,pointLight;
+var movingTeapot;
+var angle = 0;
+var teapotMaterial;
+
+init();
+animate();
+
+function init() {
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  renderer.setSize(width, height);
+  renderer.setClearColor(0x888888);
+  document.body.appendChild(renderer.domElement);
+  
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
+  camera.position.z = 200;
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+  scene.add(gridXZ);
+
+  pointLight = new THREE.PointLight(0xffffff);
+  pointLight.position.set(200, 300, 200);
+  scene.add(pointLight);
+  scene.add (new THREE.PointLightHelper (pointLight, 5));
+  var ambientLight = new THREE.AmbientLight(0x111111);
+  scene.add(ambientLight);
+   lightmodel = new THREE.Mesh(new THREE.SphereGeometry(3, 16, 16), new THREE.MeshBasicMaterial({
+    color: 0xffff00
+  }));
+  //scene.add(lightmodel);
+  /////////////////////////////////////////////////////////////////
+  let loader =  new THREE.TextureLoader();
+  loader.crossOrigin = '';
+  let tex = loader.load ('https://i.imgur.com/DrvlmNW.jpg?1');
+
+  teapotMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      lightpos: {type:'v3', value: new THREE.Vector3(0, 30, 20) },
+	  shading: {type:'i', value: 0},
+      coordinate: {type:'i', value: 0},
+	  mytex: {type: 't',value: tex},
+	},
+	
+    vertexShader: document.getElementById('myVertexShader').textContent,
+    fragmentShader: document.getElementById('myFragmentShader').textContent
+  });
+
+  movingTeapot = new THREE.Mesh (new THREE.TeapotBufferGeometry(10), teapotMaterial);
+  Teapot=new THREE.Mesh (new THREE.TeapotBufferGeometry(10), new THREE.MeshPhongMaterial());
+  scene.add (movingTeapot,Teapot);
+  
+  
+}
+
+function onWindowResize() {
+	var width = window.innerWidth;
+  var height = window.innerHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+}
+
+function animate() {
+	angle += 0.01;
+    pointLight.position.set(50 * Math.cos(angle), 80, 50 * Math.sin(angle));
+  // update the uniform variable
+  
+  if (movingTeapot !== undefined) {
+	movingTeapot.position.set (70*Math.cos(angle), 0, 70*Math.sin(angle));
+  }
+  teapotMaterial.uniforms.lightpos.value.copy(pointLight.position);
+
+  //lightmodel.position.copy(pointLight.position);
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+
+}
+
+</script>
+</body>
+
+</html>
