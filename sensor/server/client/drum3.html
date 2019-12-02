@@ -24,18 +24,20 @@ var socket = io(location.host);
 socket.on('Phone_to_THREE',function(msg){
 	console.log('bang');
 	if(msg.signal == 'drum_left'){
-		playClick();
+		playClick();//左小鼓
 		if(time_left <= 0)
 			flag_left = 1;
 	}
 	if(msg.signal == 'drum_right'){
-		playClick();
+		playClick();//右小鼓
 		if(time_right <= 0)
 			flag_right = 1;
 	}
 	
 	if(msg.signal == 'drum2'){
-	 playClick2();
+	 playClick2();//左鈸
+	 	if(time_leftleft2 <= 0)
+		flag_leftleft2 = 1;
 	}
 	if(msg.signal == 'drum3'){
 	 playClick3();
@@ -654,8 +656,8 @@ function readModel (targetSize=70) {
 		scene.add (lefthit);
 		lefthit.children[0].children[0].castShadow = true;
 		lefthit.children[0].children[0].receiveShadow = true;
-		//lefthit.position.set(-82.5,140,160);//左小鼓
-		lefthit.position.set(-137.5,180,100);
+		lefthit.position.set(-82.5,140,160);//左小鼓
+		//lefthit.position.set(-137.5,180,100);
 	    lefthit.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
@@ -683,8 +685,8 @@ function readModel2 ( targetSize=70) {
 		scene.add (righthit);
 		righthit.children[0].children[0].castShadow = true;
 		righthit.children[0].children[0].receiveShadow = true;
-		//righthit.position.set(-67.5,140,160);//右小鼓
-		righthit.position.set(-120,180,100);
+		righthit.position.set(-67.5,140,160);//右小鼓
+		//righthit.position.set(-120,180,100);
 	    righthit.setRotationFromEuler (new THREE.Euler (-3.1416/3,0,0, 'ZYX'))
     }, onProgress, onError);
   });
@@ -710,7 +712,7 @@ function unitize (object, targetSize) {
 	
 	return theObject;		
 }
-var flag_left = 0,flag_right = 0, time_left = 0, time_right = 0;
+var flag_left = 0,flag_right = 0, time_left = 0, time_right = 0,flag_leftleft2 = 0, time_leftleft2 = 0;
 function animate() {
 	var dt = clock.getDelta();
 	
@@ -719,6 +721,7 @@ function animate() {
 		time_left = 0.2;
 	}
 	if(time_left >= 0 && flag_left === 1){
+	    lefthit.position.set(-82.5,140,160);
 		if(time_left >= 0.1){
 			lefthit.rotation.x = Math.PI / 7 * ((0.2 - time_left) / -0.1)-Math.PI/3;
 		}
@@ -728,6 +731,22 @@ function animate() {
 		time_left -= dt;
 		if(time_left <= 0)
 			flag_left = 0;
+	}
+	//-------左鈸動畫
+		if(flag_leftleft2 === 1 && time_leftleft2 <= 0){
+		time_leftleft2 = 0.2;
+	}
+		if(time_leftleft2 >= 0 && flag_leftleft2 === 1){
+			lefthit.position.set(-137.5,180,100);
+		if(time_leftleft2 >= 0.1){
+			lefthit.rotation.x = Math.PI / 7 * ((0.2 - time_leftleft2) / -0.1)-Math.PI/3;
+		}
+		else {
+			lefthit.rotation.x = Math.PI / 7 * (time_leftleft2 / -0.1)-Math.PI/3;
+		}
+		time_leftleft2 -= dt;
+		if(time_leftleft2 <= 0)
+			flag_leftleft2 = 0;
 	}
 	
 	//-------右鼓棒動畫
