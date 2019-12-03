@@ -35,12 +35,12 @@ socket.on('Phone_to_THREE',function(msg){
 	}
 	
 	if(msg.signal == 'drum2'){
-	 playClick2();//左鈸
-	 	if(time_leftleft2 <= 0)
-		flag_leftleft2 = 1;
+	 playClick2();//大鼓
 	}
 	if(msg.signal == 'drum3'){
-	 playClick3();
+	 playClick3();//左鈸
+	 if(time_leftleft2 <= 0)
+	 flag_leftleft2 = 1;
 	}
 });
 $('#reset').click(function(){
