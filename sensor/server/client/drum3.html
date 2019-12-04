@@ -3,9 +3,16 @@
     <title>drum</title>
     <div id="area"></div> 
 	<div id  = 'control'>
-    <button id = "reset">Reset </button>
-	<button id = "ready">Ready </button>
+  <!--  <button id = "reset">Reset </button>
+	<button id = "ready">Ready </button>-->
 	</div>
+	<style>
+		body{
+			padding: 0;
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
    <script src="https://threejs.org/build/three.min.js"></script>
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 	<script src='https://millieyan.github.io/ex/WebAudio/js/shared.js'></script>
@@ -20,7 +27,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
 
-var socket = io(location.host);
+var socket = io('https://' + location.host,{secure: true});
 socket.on('Phone_to_THREE',function(msg){
 	console.log('bang');
 	if(msg.signal == 'drum_left'){
@@ -43,6 +50,7 @@ socket.on('Phone_to_THREE',function(msg){
 	 flag_leftleft2 = 1;
 	}
 });
+/*
 $('#reset').click(function(){
 	righthit.position.set(-67.5,140,160);
 	righthit.rotation.x=0;
@@ -55,6 +63,8 @@ $('#ready').click(function(){
 	lefthit.position.set(-82.5,140,160);
 	lefthit.rotation.x=-Math.PI/3;
 });
+
+*/
 function Createbass(){
     var bass  = new THREE.Object3D();
     var bassmain = new THREE.Object3D();
@@ -590,7 +600,7 @@ function init(){
     var axes=new THREE.AxisHelper(5);
     //scene.add(axes);
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
-    camera.position.set(200, 250, 500); 
+    camera.position.set(-160, 310, 250); 
     camera.lookAt(new THREE.Vector3(0,0,0));
     controls=new THREE.OrbitControls(camera,renderer.domElement);
     var drum=Createbass();

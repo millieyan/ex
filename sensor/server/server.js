@@ -1,10 +1,22 @@
 var express = require('express');
 var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var http = require('https');
+var fs = require('fs');
 var port = process.envPORT || 3000;
 
+const options = {
+	key: fs.readFileSync('key.pem'),
+	cert: fs.readFileSync('cert.pem')
+};
+
 app.use(express.static(__dirname));
+
+var server = http.createServer(options, app);
+server.listen(port,function(){
+	console.log('listening on *:' + port);
+});
+
+var io = require('socket.io').listen(server);
 
 io.on('connection',function(socket){
 	console.log('new connect');
@@ -16,8 +28,4 @@ io.on('connection',function(socket){
 		console.log('bang');
 		io.emit('Phone_to_THREE',msg);
 	});
-});
-
-http.listen(port,function(){
-	console.log('listening on *:' + port);
 });
