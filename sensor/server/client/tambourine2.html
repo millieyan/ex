@@ -26,6 +26,8 @@ socket.on('Phone_to_THREE',function(msg){
 	}
 	if(msg.signal == 'ring2'){
 	 playClick2();
+	  if(time <= 0)
+		flag = 1;
 	}
 });
 function Createring(){
@@ -177,11 +179,11 @@ function init() {
     spotLight.position.set(0, 500, 0);
     spotLight.angle = Math.PI / 3
     spotLight.castShadow = true;
-    spotLight.shadowMapWidth = 1024;
-    spotLight.shadowMapHeight = 1024;
-    spotLight.shadowCameraNear = 5;
-    spotLight.shadowCameraFar = 4000;
-    spotLight.shadowCameraFov = spotLight.angle / Math.PI * 180;
+    spotLight.shadow.mapSize.width = 1024;
+    spotLight.shadow.mapSize.height = 1024;
+    spotLight.shadow.camera.near = 5;
+    spotLight.shadow.camera.far = 4000;
+    spotLight.shadow.camera.fov = spotLight.angle / Math.PI * 180;
     spotLight.exponent = 20;
     spotLight.target = body;
     scene.add(spotLight);
@@ -205,8 +207,9 @@ function init() {
    // scene.add(spotball);
    
     var floor = new THREE.Mesh(new THREE.PlaneGeometry(800, 800, 30, 30),
-    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('https://millieyan.github.io/ex/drum/floor.jpg')}));
-    floor.rotation.x = -Math.PI / 2;
+    new THREE.MeshLambertMaterial({map:new THREE.TextureLoader().load('https://millieyan.github.io/ex/drum/floor.jpg')}));
+	  
+   floor.rotation.x = -Math.PI / 2;
 	floor.position.y=-50;
     scene.add(floor);
 	floor.receiveShadow = true;
@@ -215,7 +218,7 @@ function init() {
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x888888);
-    renderer.shadowMapEnabled = true;
+    renderer.shadowMap.enabled = true;
     renderer.shadowMapType = THREE.PCFShadowMap;
 	renderer.shadowMapCullFrontFaces = false;
     

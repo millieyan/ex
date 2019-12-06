@@ -40,7 +40,7 @@ body {
 <iframe id="drum" src="./drum3.html"></iframe>
 <iframe id="tam" src="./tambourine2.html"></iframe>
 <div id="main"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+<script src="https://threejs.org/build/three.min.js"></script>
 <script src='https://jyunming-chen.github.io/WebAudio/js/shared.js'></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script>
@@ -75,11 +75,15 @@ var headSync = false;
 var beatMark = 0, beatTime;
 
 var kickMark = new THREE.Mesh( new THREE.CircleGeometry( 3,32 ), 
-						new THREE.MeshBasicMaterial({color:0x0000ff}));
+						new THREE.MeshBasicMaterial({color:0xFFFF77}));
 var snareMark = new THREE.Mesh( new THREE.CircleGeometry( 3,32 ), 
-						new THREE.MeshBasicMaterial({color:0x00ff00}));
+						new THREE.MeshBasicMaterial({color:0xFFBB66}));
 var hihatMark = new THREE.Mesh( new THREE.CircleGeometry( 3,32 ), 
-						new THREE.MeshBasicMaterial({color:0xffff00}));
+						new THREE.MeshBasicMaterial({color:0xFF88C2}));
+var click2Mark = new THREE.Mesh( new THREE.CircleGeometry( 3,32 ), 
+						new THREE.MeshBasicMaterial({color:0x99FF99}));
+var handMark = new THREE.Mesh( new THREE.CircleGeometry( 3,32 ), 
+						new THREE.MeshBasicMaterial({color:0x66FFFF}));						
 var onSign = new THREE.Mesh( new THREE.PlaneGeometry( 45,45 ), 
 						new THREE.MeshBasicMaterial({color:0xff0000}));
 
@@ -90,7 +94,9 @@ var RhythmSample = function () {
         dingding: 'https://jyunming-chen.github.io/WebAudio/dingding.wav',
         kick: 'https://jyunming-chen.github.io/WebAudio/kick.wav',
         snare: 'https://jyunming-chen.github.io/WebAudio/snare.wav',
-        hihat: 'https://jyunming-chen.github.io/WebAudio/hihat.wav'
+        hihat: 'https://jyunming-chen.github.io/WebAudio/hihat.wav',
+		click2: 'https://millieyan.github.io/ex/WebAudio/tambourine.mp3',
+		hand: 'https://millieyan.github.io/ex/WebAudio/hand5.mp3'
     });
 };
 
@@ -106,12 +112,15 @@ RhythmSample.prototype.playSequence = function (score) {
             playSound2(this.snare, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);
         if (score[ii].instrument == 'h') 
             playSound2(this.hihat, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);
+		if (score[ii].instrument == 'c') 
+            playSound2(this.click2, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);
+		if (score[ii].instrument == 'd') 
+            playSound2(this.hand, startTime + score[ii].time * eighthNoteTime, score[ii].intensity);	
     }
 
 }
 
 socket.on('Phone_to_THREE',function(msg){
-	
 	if (msg.signal == 'drum2') {
 		console.log ('strike bass');
 		kick();
@@ -121,6 +130,14 @@ socket.on('Phone_to_THREE',function(msg){
 	} else if (msg.signal == 'drum3') {
 		console.log ('strike hihet');
 		hihat();
+	}
+	else if (msg.signal == 'ring') {
+		console.log ('strike ring');
+		click2();
+	}
+	else if (msg.signal == 'ring2') {
+		console.log ('strike ring2');
+		hand();
 	}
 });
 
@@ -233,26 +250,26 @@ function init() {
     var infoMesh = new THREE.Mesh(geometry, material);
 	
 
-	recordMesh = createButton ('record', 'http://i.imgur.com/Gu1CEHZ.png');
+	recordMesh = createButton ('record', 'record.png');
 	recordMesh.material.transparent=true;
     recordMesh.position.set (-80,-60,5);
 	recordOnSign = onSign.clone();
 	recordOnSign.position.copy (recordMesh.position);
 	scene.add (recordOnSign);
 	
-	eraseMesh = createButton ('erase', 'http://i.imgur.com/2YVCwkK.png');
+	eraseMesh = createButton ('erase', 'trash.png');
 	eraseMesh.material.transparent=true;
     eraseMesh.position.set (80,-60,5);
 
-	metronomeMesh = createButton ('metronome', 'http://i.imgur.com/zZdSFN6.jpg');
+	metronomeMesh = createButton ('metronome', 'tempo.png');
     metronomeMesh.position.set (-30,-60,5);
 	metronomeOnSign = onSign.clone();
 	metronomeOnSign.position.copy (metronomeMesh.position);
 	scene.add (metronomeOnSign);
 	
-	quantizeMesh = createButton ('quantize', 'http://i.imgur.com/xpurxmq.jpg');
-	eighthTex = THREE.ImageUtils.loadTexture ('http://i.imgur.com/xpurxmq.jpg');
-	sixteenthTex = THREE.ImageUtils.loadTexture('http://i.imgur.com/sOKfaMW.jpg');
+	quantizeMesh = createButton ('quantize', 'p2.jpg');
+	eighthTex = THREE.ImageUtils.loadTexture ('p2.jpg');
+	sixteenthTex = THREE.ImageUtils.loadTexture('p3.jpg');
     quantizeMesh.position.set (30,-60,5);
 	quantizeOnSign = onSign.clone();
 	quantizeOnSign.position.copy (quantizeMesh.position);
@@ -260,20 +277,39 @@ function init() {
 
 	pickables.push (recordMesh, eraseMesh, metronomeMesh, quantizeMesh);
 	
-    geometry = new THREE.PlaneGeometry(200, 30);
+    geometry = new THREE.PlaneGeometry(200, 50);//樂譜
     material = new THREE.MeshBasicMaterial({color:0xffffff});
     loopArea = new THREE.Mesh(geometry, material);
     scene.add (loopArea);
     loopArea.position.set (0,0,-2);
     
-	scene.add (eventMarks);
+	scene.add (eventMarks);//打點
 	
-	sweepLine = new THREE.Mesh (new THREE.PlaneGeometry(3,30), new THREE.MeshBasicMaterial({color:0xff5555}));
-	scene.add (sweepLine);
-
+	sweepLine = new THREE.Mesh (new THREE.PlaneGeometry(3,50), new THREE.MeshBasicMaterial({color:0xff5555}));
+	scene.add (sweepLine);//移動線
+	Line = new THREE.Mesh (new THREE.PlaneGeometry(0.4,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line.position.set(0,0,1);
+	Line2 = new THREE.Mesh (new THREE.PlaneGeometry(0.2,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line2.position.set(25,0,1);
+	Line3 = new THREE.Mesh (new THREE.PlaneGeometry(0.2,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line3.position.set(50,0,1);
+	Line4 = new THREE.Mesh (new THREE.PlaneGeometry(0.2,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line4.position.set(75,0,1);
+	Line5 = new THREE.Mesh (new THREE.PlaneGeometry(0.4,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line5.position.set(100,0,1);
+	Line6 = new THREE.Mesh (new THREE.PlaneGeometry(0.2,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line6.position.set(-25,0,1);
+	Line7 = new THREE.Mesh (new THREE.PlaneGeometry(0.2,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line7.position.set(-50,0,1);
+	Line8 = new THREE.Mesh (new THREE.PlaneGeometry(0.2,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line8.position.set(-75,0,1);
+	Line9 = new THREE.Mesh (new THREE.PlaneGeometry(0.4,50), new THREE.MeshBasicMaterial({color:0x888888}));
+	Line9.position.set(-100,0,1);
+	//scene.add (Line,Line2,Line3,Line4,Line5,Line6,Line7,Line8,Line9);
+	scene.add(Line,Line5,Line9);
     var gridXZ = new THREE.GridHelper(100, 12.5);
     gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
-    scene.add(gridXZ);
+  //  scene.add(gridXZ);
     gridXZ.rotation.x = Math.PI/2;
     //gridXZ.setColors ('red', 'red');
 
@@ -321,6 +357,10 @@ function registerEvent (now, instrument) {
 		instrument_cap = 's';
 	else if (instrument == 'hihat')
 		instrument_cap = 'h';
+	else if (instrument == 'click2')
+		instrument_cap = 'c';
+	else if (instrument == 'hand')
+		instrument_cap = 'd';	
 	var event = {time: 8*eventTime, instrument: instrument_cap, intensity: 1.0};
 	
 	score.push (event);
@@ -372,11 +412,42 @@ function hihat() {
 		// sweeper animation
 		var mesh = hihatMark.clone();
 		var xpos = -100 + 200 * event.time/8/barsInScore;
+		mesh.position.set (xpos, 16, 6);
+		eventMarks.add (mesh);
+	}
+}
+function click2() {
+//console.log ('in click2()');
+    playSound2(sample.click2, 0, 1);  // time = 0: start immediately
+
+    if (recordOn) {  // in recording ...
+        var now = context.currentTime;
+		var event = registerEvent (now, 'click2');
+		console.log (event);
+
+		// sweeper animation
+		var mesh = click2Mark.clone();
+		var xpos = -100 + 200 * event.time/8/barsInScore;
 		mesh.position.set (xpos, -8, 6);
 		eventMarks.add (mesh);
 	}
 }
+function hand() {
+//console.log ('in hand()');
+    playSound2(sample.hand, 0, 1);  // time = 0: start immediately
 
+    if (recordOn) {  // in recording ...
+        var now = context.currentTime;
+		var event = registerEvent (now, 'hand');
+		console.log (event);
+
+		// sweeper animation
+		var mesh = handMark.clone();
+		var xpos = -100 + 200 * event.time/8/barsInScore;
+		mesh.position.set (xpos, -16, 6);
+		eventMarks.add (mesh);
+	}
+}
 function Qquantize (the_number,base) {  // 3.55, 8
     var whole = Math.floor (the_number);  // 3
     var fraction = the_number - whole;    // 0.55

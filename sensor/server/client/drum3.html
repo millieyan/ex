@@ -591,13 +591,13 @@ function init(){
     renderer.setSize(width,height);
     renderer.setClearColor(0x8888888);
     //renderer.shadowMap.enabled = true;
-    renderer.shadowMapEnabled = true;
+    renderer.shadowMap.enabled = true;
     //renderer.shadowMap.type =  THREE.BasicShadowMap;
-    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     scene = new THREE.Scene();
     var grid=new THREE.GridHelper(1000,10,0x222222,0x111111);
     //scene.add(grid);
-    var axes=new THREE.AxisHelper(5);
+    var axes=new THREE.AxesHelper(5);
     //scene.add(axes);
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
     camera.position.set(-160, 310, 250); 
@@ -616,13 +616,13 @@ function init(){
         light = new THREE.SpotLight(0xffffff, 1.5);
         light.exponent = 20;
         light.castShadow = true;
-        light.shadowCameraNear = 200;
-        light.shadowCameraFar = camera.far;
-        light.shadowCameraFov = 50;
-        light.shadowBias = -0.00022;
-        light.shadowDarkness = 0.5;
-        light.shadowMapWidth = 2048;
-        light.shadowMapHeight = 2048;
+        light.shadow.camera.near = 200;
+        light.shadow.camera.far = camera.far;
+        light.shadow.camera.fov = 50;
+        light.shadow.bias = -0.00022;
+     //   light.shadowDarkness = 0.5;
+        light.shadow.mapSize.width = 2048;
+        light.shadow.mapSize.height = 2048;
         lightarray.push(light);
     }
     for(var i = 0; i < lightarray.length; i++){
