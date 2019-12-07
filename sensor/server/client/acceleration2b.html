@@ -45,6 +45,7 @@ const MAX_LINE_POINTS = 300;
 var xx = 0, accelerationx, y,accelerationz, z;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
+var a=0,b=0,clock;
 initAudio();
 init();
 animate();
@@ -78,7 +79,7 @@ socket.emit("Singal_From_Phone",{signal: "drum3"});
     playSound2(sample.hihat, 0, 1);  // time = 0: start immediately
 }
 function init() {
-
+  clock = new THREE.Clock();
   renderer = new THREE.WebGLRenderer({
     antialias: true
   });
@@ -161,7 +162,21 @@ function addPoint(myPoint) {
 }
 
 function animate() {
-  /*xx += 0.5;
+var dt = clock.getDelta();
+//console.log(b);
+
+a=dt;
+b+=a;
+if(b>0.1){
+   if(y>6) {
+     playClick();
+   }
+   else if (z<-6){
+     playClick2();
+   }
+   b=0;
+}
+ /* xx += 0.5;
     if(y>-0.01){
 	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
 	  addPoint(pt);
@@ -180,14 +195,8 @@ function animate() {
 	}
    if (xx - camera.position.x > 5) {
     camera.position.x += 5
-   }
-   */
-   if (y>4&&y<7) {
-     playClick();
-   }
-   else if(z<-7){
-     playClick3();
-   }
+   }*/
+
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);
 }
