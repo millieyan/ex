@@ -39,7 +39,7 @@
 	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
 	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
-
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/geometries/TeapotBufferGeometry.js"></script>
 <script id="myVertexShader-mono" type="x-shader/x-vertex">
   varying vec2 vUv; 
   void main() { 
@@ -74,6 +74,89 @@
   	gl_FragColor = vec4 (cc, 1.0); 
   }
 </script>
+<script id="myVertexShader" type="x-shader/x-vertex">
+  uniform int shading;
+  uniform int coordinate;
+  varying vec3 color;
+  varying vec3 pos;
+  varying vec4 worldpos;
+  varying vec4 eyepos;
+  
+  void perVertexShading(vec3 objpos,vec3 worldpos) {
+    if (coordinate == 0) {	//物件
+  	  if (objpos.x > 0.0) 
+    	color = vec3 (0.5,0.5,0.5);
+      else
+    	color = vec3 (0.5,0.5,0.5);
+    } 
+	else if (coordinate == 1) {	//世界
+  	  if (worldpos.x > 0.0) 
+    	color = vec3 (0.5,0.5,0.5);
+      else
+    	color = vec3 (0.5,0.5,0.5);    	
+    }
+	else{	//眼睛
+	  if (eyepos.x > 0.0)
+		color = vec3 (0.5,0.5,0.5);
+	  else 
+		color = vec3 (0.5,0.5,0.5);
+	}
+  }
+  // your homework
+  void perPixelShading() {
+  }
+  
+  void main() {
+   
+	gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0);
+    worldpos = modelMatrix * vec4 (position, 1.0);
+    eyepos =  modelViewMatrix * vec4 (position, 1.0);
+	pos = position;
+
+  	if (shading == 0)  // per-vertex shading
+    	perVertexShading(position, worldpos.xyz);
+    else
+    	perPixelShading();
+  }
+</script>
+
+<script id="myFragmentShader" type="x-shader/x-fragment">
+  uniform int shading;
+  uniform int coordinate;
+  varying vec3 color;
+  varying vec3 pos;
+  varying vec4 worldpos;
+  varying vec4 eyepos;
+  vec3 mycolor;
+  
+	void main() {
+		if(shading ==0){
+		gl_FragColor = vec4(color,0.5);
+		}
+		else{
+		if (coordinate == 0) {
+			if (pos.x > 0.0) 
+				mycolor = vec3 (0.5,0.5,0.5);
+			else
+				mycolor = vec3 (0.5,0.5,0.5);
+			} 
+		else if (coordinate == 1) {
+			if (worldpos.x > 0.0) 
+				mycolor = vec3(0.5,0.5,0.5);
+			else
+				mycolor = vec3 (0.5,0.5,0.5);    	
+			}
+		else{
+			if (eyepos.x > 0.0)
+				mycolor = vec3 (0.5,0.5,0.5);
+			else 
+				mycolor = vec3 (0.5,0.5,0.5);
+			}
+			gl_FragColor = vec4 (mycolor, 0.5);
+			}
+		}
+	
+</script>
 <script>
 javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='https://mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
 
@@ -94,8 +177,9 @@ var angle = 0;
 var keyboard = new KeyboardState();
 var stats;
 var lightsOff = false;
-var lightsbOff = false;
-
+var movingTeapot;
+var teapotMaterial;
+var movingTeapot;
 function Createtable() {
   var table = new THREE.Object3D();
   var mat = new THREE.MeshPhongMaterial({
@@ -285,6 +369,22 @@ width = window.innerWidth;
  //sceneGrey.add(drink);
   drink.castShadow = true;
   drink.receiveShadow = true;
+  
+   teapotMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      lightpos: {type:'v3', value: new THREE.Vector3(0, 30, 20) },
+	  shading: {type:'i', value: 0},
+      coordinate: {type:'i', value: 0},
+	},
+    vertexShader: document.getElementById('myVertexShader').textContent,
+    fragmentShader: document.getElementById('myFragmentShader').textContent
+  });
+
+  Teapot = new THREE.Mesh (new THREE.TeapotBufferGeometry(5), teapotMaterial);
+  Teapot.position.set(-50,47,50);
+  sceneGrey.add (Teapot);
+  
+  
 ////////////////////////////////////////////////////////////////////////////
   var geometry = new THREE.CircleGeometry( 5, 32 );
   var material = new THREE.MeshBasicMaterial( { color: 0xD0B887, side: THREE.DoubleSide } );
