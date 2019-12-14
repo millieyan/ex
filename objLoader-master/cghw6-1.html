@@ -1,38 +1,37 @@
-
 <!DOCTYPE html>
-
 <html>
 
 <head>
 <style>
-body {
-	  background-color: #fff;
-	  color: #111;
+	body {
+	  font-family: Monospace;
+	  background-color: #000;
+	  color: #fff;
 	  margin: 0px;
 	  overflow: hidden;
-	  font-family: Monospace;
-	  font-size: 20px;
+	}
+	#info {
+	  color: #000;
 	  position: absolute;
-}
-  
-#info {
-	  position: absolute;
-	  top: 0px;
+	  top: 10px;
 	  width: 100%;
-	  padding: 5px;
 	  text-align: center;
-	  color: #ffff00
-}
-
+	  z-index: 100;
+	  display: block;
+	}
+	#info a,
+	.button {
+	  color: #f00;
+	  font-weight: bold;
+	  text-decoration: underline;
+	  cursor: pointer
+	}
 </style>
 </head>
 
 <body> 
-<div id="info">
-  <br> hw6-1
-</div>
-
-<script src="https://threejs.org/build/three.min.js"></script>
+	<div id="info">hw6-1</div>
+	<script src="https://threejs.org/build/three.min.js"></script>
 	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
 	</script>
 	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -115,7 +114,12 @@ function Createtable() {
   f3.position.set(-27.5, 20, 57.5);
   f4.position.set(-27.5, 20, -57.5);
   
-
+  table.traverse((e) => {
+  	if(e instanceof THREE.Mesh){
+    	e.castShadow = true;
+      e.receiveShadow = true;
+    }
+  })
   return table;
 }
 function Createpenholder(){
@@ -165,9 +169,8 @@ function Createdrink() {
   }
 init();
 animate();
-
 function init() {
-  width = window.innerWidth;
+width = window.innerWidth;
   height = window.innerHeight;
   
   renderer = new THREE.WebGLRenderer({
@@ -194,11 +197,11 @@ function init() {
   	renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
+//////////////////////////////////////////////
+  sceneGrey = new THREE.Scene();//灰
 
-  sceneGrey = new THREE.Scene();
-  let floor = new THREE.Mesh (new THREE.PlaneGeometry (200,200), new THREE.MeshPhongMaterial({color: 'gray'}));
-  floor.rotation.x = -Math.PI/2;
-  
+  //let floor = new THREE.Mesh (new THREE.PlaneGeometry (200,200), new THREE.MeshPhongMaterial());
+  //floor.rotation.x = -Math.PI/2;
   var geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
   var torus = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial({color: 'cyan'}) );
   torus.position.set (40, 10, 30);
@@ -206,70 +209,45 @@ function init() {
   var box = new THREE.Mesh (new THREE.BoxGeometry (30, 40, 60), new THREE.MeshLambertMaterial({color: 'red'}));
   box.position.set (-30, 20, -50);
 
-  sceneGrey.add (floor);
+//  sceneGrey.add (floor, torus, box);
     
   sceneColor = new THREE.Scene();
   var geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
   var material = new THREE.MeshLambertMaterial( { color: 'red' } );
   var torusKnot = new THREE.Mesh( geometry, material );
- // sceneColor.add( torusKnot);
+  //sceneColor.add( torusKnot);
   torusKnot.position.y = 20;
   
-  renderTarget = new THREE.WebGLRenderTarget (width, height);  // full-size RT
-
-  // it seems that
-  // one light can not be added to two DIFFERENT scenes ...
-  //
-  light = new THREE.PointLight( 0xffffff, 1);
-  light.position.set( 50, 50, 50 );
-  light2 = new THREE.PointLight( 0xffffff, 1);
-  
-  sceneColor.add (light);
- // sceneColor.add (new THREE.PointLightHelper (light,5))
-  sceneGrey.add (light2);
-  
-  ////////////////////////////////////////////////////////////////////////
-   var uniforms = {
-    texture: {
-      type: 't',
-      value: renderTarget.texture
-    } ,
-  };
-
-  // scene0: for processing texture
-  // camera0: full-screen ortho camera
-  // plane0: mesh for texture processing
-  scene0 = new THREE.Scene();
-  camera0 = new THREE.OrthographicCamera (0, width, height, 0,-10,100);
-  
-  var vertShader = document.getElementById('myVertexShader-mono').textContent;
-  var fragShader = document.getElementById('myFragmentShader-mono').textContent;
-  shaderMaterial = new THREE.ShaderMaterial({
-    uniforms: uniforms,
-    vertexShader: vertShader,
-    fragmentShader: fragShader,
-    
-    depthTest: false,  // no depth test
-    depthWrite: false  // do not write depth buffer
-  });
-
-  // plane geometry filled the entire screen
-  var plane0 = new THREE.Mesh (new THREE.PlaneGeometry(width, height), shaderMaterial);
-  scene0.add (plane0);
-  plane0.position.set (width/2, height/2, 0);
-
-  ///////////////////////////////////////////////////////////
-  container = document.createElement('div');
-
+ /* container = document.createElement('div');
+  document.body.appendChild(container);
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+  renderer.setClearColor (0xffffff);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+  camera.position.z = 100;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
   scene = new THREE.Scene();
   var ambient = new THREE.AmbientLight(0x444444);
   scene.add(ambient);
   
+  gridxz = new THREE.GridHelper (200, 20,'red','black');
+  //scene.add (gridxz);
+  let axis = new THREE.AxesHelper (20);
+ // scene.add (axis);
+ 
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  
+  var directionalLight = new THREE.DirectionalLight(0xffffff);
+  directionalLight.position.set(0, 0, 1).normalize();
+ // scene.add(directionalLight);
  
   var pointLight = new THREE.PointLight (0xffffff,0.7);
   pointLight.position.set (100,200,-100);
   pointLight.castShadow = true;
- // scene.add (pointLight);
+  scene.add (pointLight);
   
   var light = new THREE.PointLight(0xffffff, 0.5);
   light.castShadow = true;
@@ -279,8 +257,12 @@ function init() {
   light.shadow.camera.near = 3;
   light.shadow.camera.far = 130;
   light.shadow.camera.fov = light.angle / Math.PI * 180 ;
-//  scene.add(light);
+  scene.add(light);
   
+  var sphereSize = 1;
+  var pointLightHelper = new THREE.PointLightHelper( light, sphereSize );
+ // scene.add( pointLightHelper )
+ */
 ///////////////////////////////////////////////////////////////////  
   window.addEventListener('resize', onWindowResize, false);
   readModel();
@@ -291,16 +273,16 @@ function init() {
   readModel6();
   readModel7();
   var table = Createtable();
-  scene.add(table);
+ sceneGrey.add(table);
  
   var penholder=Createpenholder();
-  scene.add(penholder);
+ sceneGrey.add(penholder);
   penholder.position.set(-80,48,20);
   penholder.castShadow = true;
   penholder.receiveShadow = true;
   
   var drink= Createdrink();
-  scene.add(drink);
+ //sceneGrey.add(drink);
   drink.castShadow = true;
   drink.receiveShadow = true;
 ////////////////////////////////////////////////////////////////////////////
@@ -309,7 +291,7 @@ function init() {
   var circle = new THREE.Mesh( geometry, material );
   circle.position.set(-80,43,20);
   circle.rotation.x=-Math.PI/2;
-  scene.add( circle );
+  sceneGrey.add( circle );
 ////////////////////////////////////////////////////////////////////////////
     var drink2 = new THREE.Mesh(new THREE.PlaneGeometry(7, 5.2, 30, 30),
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
@@ -323,7 +305,7 @@ function init() {
     new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
 	//drink4.rotation.x =-Math.PI / 3;
 	drink4.position.set(-81,55.2,5.975);
-    scene.add(drink2,drink3,drink4);
+    //sceneGrey.add(drink2,drink3,drink4);
 	var triangleGeometry = new THREE.Geometry(); 
 	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, 1.7, 0.95)); 
 	triangleGeometry.vertices.push(new THREE.Vector3(-5.5, -1, 0.95)); 
@@ -346,13 +328,18 @@ function init() {
 	var triangleMesh2 = new THREE.Mesh(triangleGeometry, triangleMaterial); 
 	triangleMesh2.position.set(-78.6,54,5); 
 	triangleMesh2.rotation.y=Math.PI/2;
-	scene.add(triangleMesh,triangleMesh2); 
-
+	//sceneGrey.add(triangleMesh,triangleMesh2); 
+/////////////////////////////////////////////////////////////////////////		
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 30, 30),
+  new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('floor.jpg')}));
+  floor.rotation.x = -Math.PI / 2;
+  sceneGrey.add(floor);
+  floor.receiveShadow = true;
   ///////////////////////////////////////////////////////////////////
   var geometry = new THREE.BoxGeometry( 15, 2, 7 );
   var material = new THREE.MeshBasicMaterial( {color: 0x000000} );
   var remotecontrol = new THREE.Mesh( geometry, material );
-  scene.add( remotecontrol );
+  sceneGrey.add( remotecontrol );
   remotecontrol.position.set(-80,43,-50)
   objects = new THREE.Group();
   let cube = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}));
@@ -364,7 +351,7 @@ function init() {
   sphere.position.set (-83,44,-50)
 
   objects.add (cube, sphere);
-  scene.add (objects);
+  sceneGrey.add (objects);
   pickables = [ objects ];
 
   raycaster = new THREE.Raycaster();
@@ -417,7 +404,51 @@ function onDocumentMouseOver(event) {
   }
 
 }
+  renderTarget = new THREE.WebGLRenderTarget (width, height);  // full-size RT
+
+  // it seems that
+  // one light can not be added to two DIFFERENT scenes ...
+  //
+  light = new THREE.PointLight( 0xffffff, 1);
+  light.position.set( 50, 50, 50 );
+  light2 = new THREE.PointLight( 0xffffff, 1);
+  
+  sceneColor.add (light);
+  sceneColor.add (new THREE.PointLightHelper (light,5))
+  sceneGrey.add (light2);
+//////////////////////////////////////////////////////////////////
+ var uniforms = {
+    texture: {
+      type: 't',
+      value: renderTarget.texture
+    } ,
+  };
+
+  // scene0: for processing texture
+  // camera0: full-screen ortho camera
+  // plane0: mesh for texture processing
+  scene0 = new THREE.Scene();
+  camera0 = new THREE.OrthographicCamera (0, width, height, 0,-10,100);
+  
+  var vertShader = document.getElementById('myVertexShader-mono').textContent;
+  var fragShader = document.getElementById('myFragmentShader-mono').textContent;
+  shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: vertShader,
+    fragmentShader: fragShader,
+    
+    depthTest: false,  // no depth test
+    depthWrite: false  // do not write depth buffer
+  });
+
+  // plane geometry filled the entire screen
+  var plane0 = new THREE.Mesh (new THREE.PlaneGeometry(width, height), shaderMaterial);
+  scene0.add (plane0);
+  plane0.position.set (width/2, height/2, 0);
+
 }
+
+
 function readModel (modelName, targetSize=60) {
   var onProgress = function(xhr) {
     if (xhr.lengthComputable) {
@@ -438,7 +469,7 @@ function readModel (modelName, targetSize=60) {
 		let theObject =  unitize (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(0,30,0);
@@ -465,7 +496,7 @@ function readModel2 ( targetSize=35) {
 		let theObject =  unitize (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 	    theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(-76,60,35);
@@ -492,7 +523,7 @@ function readModel3 (targetSize=15) {
 		let theObject =  unitize3 (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(-80,50,21);
@@ -519,7 +550,7 @@ function readModel4 (targetSize=13) {
 		let theObject =  unitize4 (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 	    theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(-59,47,-31);
@@ -546,7 +577,7 @@ function readModel5 (targetSize=33) {
 		let theObject =  unitize5 (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(-50,51,-1);
@@ -573,7 +604,7 @@ function readModel6 (targetSize=11) {
 		let theObject =  unitize6 (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(-43,42.5,31);
@@ -600,7 +631,7 @@ function readModel7 (targetSize=15) {
 		let theObject =  unitize7 (object, targetSize);
 		//theObject.add ( new THREE.BoxHelper (theObject) )
 		theObject.name = 'OBJ'
-		scene.add (theObject);
+		sceneGrey.add (theObject);
 		theObject.children[0].children[0].castShadow = true;
 		theObject.children[0].children[0].receiveShadow = true;
 		theObject.position.set(-78,52,17);
@@ -756,13 +787,11 @@ function unitize7 (object, targetSize) {
 	
 	return theObject;		
 }
-
-
 function animate() {
-  angle += 0.01;
+ angle += 0.01;
   requestAnimationFrame(animate);
- // light.position.set (40*Math.cos(angle), 60, 40*Math.sin(angle));
- // light2.copy (light);
+  light.position.set (40*Math.cos(angle), 60, 40*Math.sin(angle));
+  light2.copy (light);
   
   // render sceneGrey to renderTarget
   renderer.setRenderTarget (renderTarget);
@@ -791,10 +820,7 @@ function animate() {
   
   // render sceneColor
   renderer.render(sceneColor, camera);
-  
 }
-
-
 </script>
 </body>
 
