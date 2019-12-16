@@ -167,35 +167,23 @@ var dt = clock.getDelta();
 
 a=dt;
 b+=a;
-if(b>0.1){
-   if(y>6) {
-     playClick();
-   }
-   else if (z<-6){
-     playClick2();
-   }
-   b=0;
-}
- /* xx += 0.5;
-    if(y>-0.01){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y<0.01){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y<-0.05){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y>0.05){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-   if (xx - camera.position.x > 5) {
-    camera.position.x += 5
-   }*/
+if(b>0.04){
+		if(y>3&&touch==1&&touch2==1){ 
+			playClick();
+			touch=0;
+		}
+			else if(y<=3){
+				touch=1;
+		}
+		if (z<-4&&touch2==1&&touch==1) {
+				playClick2();
+				touch2=0;
+		}
+			else if(z>=-4){
+				touch2=1;
+			}
+		   b=0;
+	}	
 
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);

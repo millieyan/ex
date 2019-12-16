@@ -339,9 +339,9 @@ function registerEvent (now, instrument) {
 	console.log ('event(before q): ' + eventTime);
 	var factor = 0;
 	if (quantizeMode == 1)
-		factor = 8;
+		factor = 4; //4分音符
 	else if (quantizeMode == 2)
-		factor = 16
+		factor = 8;
 		
 	if (factor != 0) 
 	eventTime = Qquantize (eventTime, factor);                 
@@ -466,8 +466,8 @@ function quantizeFraction (number, base) {
     // fraction*base*base = c2*base^0 + ....
     // if (c2 >= base/2) 0.(c1+1)
     // else              0.(c1)
-    if (Math.floor(fraction * base * base) >= base/2)
-        intPart += 1;
+    //if (Math.floor(fraction * base * base) >= base/2)
+    //    intPart += 1;
     return (intPart/base);
 }
 

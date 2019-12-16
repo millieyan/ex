@@ -28,4 +28,8 @@ io.on('connection',function(socket){
 		console.log('bang');
 		io.emit('Phone_to_THREE',msg);
 	});
+	
+	socket.on('Testing',function(msg){
+		console.log(msg.value);
+	});
 });

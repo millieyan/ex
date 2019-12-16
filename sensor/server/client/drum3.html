@@ -29,7 +29,6 @@
 
 var socket = io('https://' + location.host,{secure: true});
 socket.on('Phone_to_THREE',function(msg){
-	console.log('bang');
 	if(msg.signal == 'drum_left'){
 		playClick();//左小鼓
 		if(time_left <= 0)

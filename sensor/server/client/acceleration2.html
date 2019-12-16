@@ -45,6 +45,9 @@ var xx = 0, accelerationx, y,accelerationz, z;
 var sample = new RhythmSample();
 var sample2 = new RhythmSample();
 var a=0,b=0,clock;
+var touch=1,touch2=1;
+
+
 initAudio();
 init();
 animate();
@@ -105,8 +108,13 @@ function init() {
 			accelerationz = document.getElementById('accelerationz');
 			y = event.acceleration.x;
 		    z = event.acceleration.z;
+			
+			
+
 			accelerationx.innerHTML = y.toFixed(2);
 			accelerationz.innerHTML = z.toFixed(2);
+		
+			
 		}, false);
 	}
 ////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +125,8 @@ function init() {
  }, 1000000 );
 
 }
+
+
 function createNewLine(startingPoint) {
   var geometry = new THREE.Geometry();
 
@@ -140,41 +150,26 @@ function addPoint(myPoint) {
 function animate() {
 var dt = clock.getDelta();
 //console.log(b);
-
 a=dt;
 b+=a;
-if(b>0.08){
-if(y<-5){ 
-	playClick();
-	}
-
-	if (z<-6) {
-     playClick3();
-   }
-   b=0;
-}
- /* xx += 0.5;
-    if(y>-0.01){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y<0.01){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y<-0.05){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-	else if(y>0.05){
-	  pt = new THREE.Vector3(xx,Math.round(y), 0);	
-	  addPoint(pt);
-	}
-   if (xx - camera.position.x > 5) {
-    camera.position.x += 5
-   }*/
-
-	
+	if(b>0.04){
+		if(y<-5&&touch==1&&touch2==1){ 
+			playClick();
+			socket.emit("Testing",{value: y});
+			touch=0;
+		}
+			else if(y>=-5){
+				touch=1;
+		}
+		if (z<-4&&touch2==1&&touch==1) {
+				playClick3();
+				touch2=0;
+		}
+			else if(z>=-4){
+				touch2=1;
+			}
+		   b=0;
+	}	
 	requestAnimationFrame(animate);   
     renderer.render(scene, camera);
 }

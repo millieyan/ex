@@ -18,7 +18,6 @@
 <script>
 var socket = io(location.host);
 socket.on('Phone_to_THREE',function(msg){
-	console.log('bang');
 	if(msg.signal == 'ring'){
 	 playClick();
 	 if(time <= 0)
