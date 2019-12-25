@@ -56,6 +56,7 @@ var sweepVel = 100 / (60/tempo * 4);
 var pickables = [];
 var raycaster;
 var mouse = new THREE.Vector2();
+var socketSign = [];
 
 
 var sample;
@@ -121,6 +122,10 @@ RhythmSample.prototype.playSequence = function (score) {
 }
 
 socket.on('Phone_to_THREE',function(msg){
+	for(let i = 0; i < socketSign.length; i++)
+		if(socketSign[i] === msg.id)
+			return;
+
 	if (msg.signal == 'drum2') {
 		console.log ('strike bass');
 		kick();
@@ -139,6 +144,8 @@ socket.on('Phone_to_THREE',function(msg){
 		console.log ('strike ring2');
 		hand();
 	}
+	
+	socketSign.push(msg.id);
 });
 
 init();
@@ -201,7 +208,7 @@ function playMetronome(reset) {
 		++beatMark;  // two-bar: 1,2,3,4, 5,6,7
 		beatTime = context.currentTime;
 		console.log (beatMark + ': ' + beatTime);
-		
+		socketSign = [];
 	}
 	if (metronomeOn) {
 		setTimeout(function () {
