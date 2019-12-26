@@ -25,7 +25,7 @@ io.on('connection',function(socket){
 		console.log('disconnect');
 	});
 	socket.on('Singal_From_Phone',function(msg){
-		msg.id = socket.id;//測試一下 看賴
+		msg.id = socket.id;
 		io.emit('Phone_to_THREE',msg);
 	});
 	
