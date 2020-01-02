@@ -57,6 +57,7 @@ var pickables = [];
 var raycaster;
 var mouse = new THREE.Vector2();
 var socketSign = [];
+var clearSignfun;
 
 
 var sample;
@@ -122,6 +123,7 @@ RhythmSample.prototype.playSequence = function (score) {
 }
 
 socket.on('Phone_to_THREE',function(msg){
+	console.log(socketSign.length);
 	for(let i = 0; i < socketSign.length; i++)
 		if(socketSign[i] === msg.id)
 			return;
@@ -208,12 +210,23 @@ function playMetronome(reset) {
 		++beatMark;  // two-bar: 1,2,3,4, 5,6,7
 		beatTime = context.currentTime;
 		console.log (beatMark + ': ' + beatTime);
-		socketSign = [];
+		
 	}
 	if (metronomeOn) {
 		setTimeout(function () {
 			playMetronome();
 		}, quarterNoteTime*1000);
+		
+		let spaceTime = 1;
+		if(quantizeMode == 2)
+			spaceTime = 0.5;
+		
+		
+		clearSignfun = setInterval(function(){
+			console.log('clear');
+			socketSign = [];
+			clearInterval(clearSignfun);
+		},quarterNoteTime*1000*spaceTime);
 	}
 }
 

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+	body {
+	  font-family: Monospace;
+	  background-color: #000;
+	  color: #fff;
+	  margin: 0px;
+	  overflow: hidden;
+	}
+	#info {
+	  color: #000;
+	  position: absolute;
+	  top: 10px;
+	  width: 100%;
+	  text-align: center;
+	  z-index: 100;
+	  display: block;
+	}
+	#info a,
+	.button {
+	  color: #f00;
+	  font-weight: bold;
+	  text-decoration: underline;
+	  cursor: pointer
+	}
+</style>
+</head>
+
+<body> 
+	<div id="info">hw6-3</div>
+	<script src="https://threejs.org/build/three.min.js"></script>
+	<script src="https://threejs.org/examples/js/controls/OrbitControls.js">
+	</script>
+	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script src="https://rawgit.com/jyunming-chen/tutsplus/master/js/KeyboardState.js"></script>
+	<!--script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/DDSLoader.js"></script-->
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/MTLLoader.js"></script>
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/loaders/OBJLoader.js"></script>
+	<script src="https://raw.githack.com/mrdoob/three.js/dev/examples/js/geometries/TeapotBufferGeometry.js"></script>
+<script id="vsNormal" type="x-shader/x-vertex">
+  varying vec3 vNormal;
+  void main() { 
+  	gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0); 
+    vNormal = normalMatrix*normal;
+  }
+</script>
+<script id="fsNormal" type="x-shader/x-fragment">
+  varying vec3 vNormal; // [-1,1]^3
+  void main() {    
+  	vec3 color = (normalize(vNormal)+1.0)/2.; // [0,1]^3
+  	gl_FragColor = vec4 (color,1);
+  }
+</script>
+<!-- shader for Lapace filter -->
+<!-- with background discard  -->
+
+<script id="vsFilter" type="x-shader/x-vertex">
+  varying vec2 vUv; 
+  void main() { 
+    gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0); 
+    vUv = uv; 
+  }
+</script>
+<script id="fsFilter" type="x-shader/x-fragment">
+  uniform sampler2D texture; 
+  uniform int imageSize;
+  varying vec2 vUv; 
+  void main() { 
+    float step_w = 1.0/float(imageSize); 
+    float step_h = 1.0/float(imageSize); 
+	// Laplace filter
+	float kernel[9]; 
+    kernel[0] = kernel[2] = kernel[6] = kernel[8] = 0.0/1.0; 
+    kernel[1] = kernel[3] = kernel[5] = kernel[7] = 1.0/1.0; 
+    kernel[4] = -4.0/1.0; 
+    vec2 offset[9]; 
+    offset[0]=vec2(-step_w, -step_h); 
+    offset[1]=vec2(0.0, -step_h); offset[2]= vec2(step_w, -step_h), 
+    offset[3]=vec2(-step_w, 0.0), offset[4]=vec2(0.0, 0.0), offset[5]=vec2(step_w, 0.0), 
+    offset[6]=vec2(-step_w, step_h), offset[7]=vec2(0.0, step_h), offset[8]=vec2(step_w, step_h); 
+  
+    vec3 sum= vec3(0.0); 
+ 	for (int i=0 ; i < 9; i++) { 
+       vec3 tmp=texture2D (texture, vUv+offset[i]).rgb; 
+       sum += tmp*kernel[i]; 
+    }
+
+    if ((sum.r+sum.g+sum.b)/3.0 < 0.1) // if close to (0,0,0)
+  	   discard;
+    else 
+  	   gl_FragColor = vec4 (0,0,0, 1.0); 
+  }
+</script>
+<!-- shader to cutout "background" -->
+<script id="vsCut" type="x-shader/x-vertex">
+  varying vec2 vUv; 
+  void main() { 
+    gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0); 
+    vUv = uv; 
+  }
+</script>
+<script id="fsCut" type="x-shader/x-vertex">
+  uniform sampler2D texture; 
+  varying vec2 vUv;
+  void main() {
+  	vec3 color = texture2D (texture, vUv).rgb;
+  	if (color.r > 0.95 && color.g > 0.95 && color.b < 0.05)  // close to (1,1,0)
+  	   discard;
+  	else
+  		gl_FragColor = vec4 (color, 1);
+  }
+</script>
+
+<script id="myVertexShader-mono" type="x-shader/x-vertex">
+  varying vec2 vUv; 
+  void main() { 
+     gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0); 
+     vUv = uv; 
+  }
+</script>
+<script id="myFragmentShader-mono" type="x-shader/x-fragment">
+  uniform sampler2D texture; 
+  varying vec2 vUv; 
+  
+  vec3 rgb2hsv(vec3 c) {
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+  }
+  vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+  }
+  
+  void main() { 
+  	vec3 color = texture2D (texture, vUv).rgb;
+  	vec3 hh = rgb2hsv (color);
+  	hh.y = 0.0;  // set saturation to 0
+  	vec3 cc = hsv2rgb (hh);
+  	gl_FragColor = vec4 (cc, 1.0); 
+  }
+</script>
+<script id="myVertexShader" type="x-shader/x-vertex">
+  uniform vec3 lightpos;
+  varying float ndotl;
+  varying vec3 lightdir;
+  varying vec3 eyenorm;
+  
+  void main() {
+    gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0);
+    
+    //vec4 worldpos = modelMatrix * vec4 (position, 1.0);
+    //ndotl = dot (normalize(lightpos.xyz - worldpos.xyz), normal);
+    vec4 eyepos = modelViewMatrix * vec4 (position, 1.0);
+    vec4 lighteye = viewMatrix * vec4 (lightpos, 1.0);
+    lightdir = lighteye.xyz - eyepos.xyz;
+    eyenorm = normalMatrix * normal;
+  }
+</script>
+<script id="myFragmentShader" type="x-shader/x-fragment">
+  varying float ndotl;
+  varying vec3 lightdir;
+  varying vec3 eyenorm;
+  
+  void main() {
+    float nn = dot (normalize(lightdir), normalize(eyenorm));
+    if (nn > 0.8) {
+      nn= 1.0;
+    } else if (nn > 0.6) {
+      nn = 0.6;
+    } else {
+      nn = 0.2;
+    }
+    gl_FragColor = vec4 (nn*.120/.255,nn*.224/.255,nn*.255/.255, 1.0);
+  }
+  </script>
+  
+<script id="vs-texSwap" type="x-shader/x-vertex">
+  uniform int which; // 0, 1
+  varying vec2 vUv; 
+  void main() {
+     gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0);      
+     vUv = vec2 ((uv.s + float(which))/2., uv.t); 
+  }
+</script>
+<script id="fs-texSwap" type="x-shader/x-fragment">
+  uniform sampler2D texture; 
+  varying vec2 vUv; 
+  void main() {
+    vec3 color = texture2D (texture, vUv).rgb;
+  	gl_FragColor = vec4 (color, 1.0); 
+  }
+</script>
+<script>
+javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='https://mrdoob.github.io/stats.js/build/stats.min.js';document.head.appendChild(script);})()
+
+var light, light2;
+var camera, scene, renderer,car;
+var theObject;
+var mouseX = 0,
+    mouseY = 0;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var controls;
+var raycaster;
+var mouse = new THREE.Vector2();
+var pickables = [];
+var objects;
+var theModel;
+var angle = 0;
+var keyboard = new KeyboardState();
+var stats;
+var lightsOff = false;
+var movingTeapot;
+var teapotMaterial;
+var movingTeapot;
+var planeXX;
+var subject, subjectClone;
+var which = 0;
+function Createtable() {
+  var table = new THREE.Object3D();
+  var mat = new THREE.MeshPhongMaterial({
+    color: 0x3D1F00
+  });
+  var body = new THREE.Mesh(new THREE.BoxGeometry(70, 5, 120), mat);
+  var f1 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  var f2 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  var f3 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  var f4 = new THREE.Mesh(new THREE.BoxGeometry(5, 40, 5), mat);
+  table.add(body);
+  table.add(f1, f2, f3, f4);
+  body.position.set(-60, 40, 0);
+  f1.position.set(-92.5, 20,57.5);
+  f2.position.set(-92.5, 20, -57.5);
+  f3.position.set(-27.5, 20, 57.5);
+  f4.position.set(-27.5, 20, -57.5);
+  
+  table.traverse((e) => {
+  	if(e instanceof THREE.Mesh){
+    	e.castShadow = true;
+      e.receiveShadow = true;
+    }
+  })
+  return table;
+}
+function Createpenholder(){
+	var geometry = new THREE.CylinderGeometry(5, 5, 10, 64, 1, true);
+	var loader2 = new THREE.TextureLoader();
+	var colorMap = loader2.load('background2-cutout.png');
+	var material = new THREE.MeshBasicMaterial({
+    map: colorMap,
+    alphaTest: 0.5,
+    side: THREE.DoubleSide
+  });
+	mesh = new THREE.Mesh(geometry, material);
+	mesh.position.set(0,5,0);
+	mesh.rotation.y=Math.PI/2;
+	return mesh;
+}
+function Createdrink() {
+  var met = new THREE.MeshNormalMaterial();
+  let loader2 = new THREE.TextureLoader()
+  loader2.crossOrigin = '';
+  let texture = loader2.load('drink.jpeg');
+  texture.repeat.set(1, 1);
+  let matArray = [];
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    color: 0xA9A9A9
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    color: 0xA9A9A9
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  matArray.push(new THREE.MeshBasicMaterial({
+    map: texture
+  }));
+  let allMaterial = new THREE.MultiMaterial(matArray);
+  var boxGeometry = new THREE.BoxGeometry(7, 10, 9);
+  var box = new THREE.Mesh(boxGeometry, allMaterial);
+  box.position.copy(new THREE.Vector3(-81,48,6));
+  return box;
+  }
+init();
+animate();
+function init() {
+width = window.innerWidth;
+  height = window.innerHeight;
+  
+  renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
+  renderer.setSize(width, height);
+  document.body.appendChild(renderer.domElement);
+  renderer.setClearColor(0x888888);
+  
+  renderer.autoClear = false;
+  
+  camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+  camera.position.y = 80;
+  camera.position.z = 400;
+  camera.lookAt(new THREE.Vector3(0, 0, 0));
+  
+  let controls = new THREE.OrbitControls(camera, renderer.domElement);
+  scene = new THREE.Scene();
+
+  window.addEventListener('resize', onWindowResize, false);
+  function onWindowResize() {
+  	camera.aspect = window.innerWidth / window.innerHeight;
+  	camera.updateProjectionMatrix();
+  	renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+//////////////////////////////////////////////
+  sceneGrey = new THREE.Scene();//灰
+
+  //let floor = new THREE.Mesh (new THREE.PlaneGeometry (200,200), new THREE.MeshPhongMaterial());
+  //floor.rotation.x = -Math.PI/2;
+  var geometry = new THREE.TorusGeometry( 10, 3, 16, 100 );
+  var torus = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial({color: 'cyan'}) );
+  torus.position.set (40, 10, 30);
+  torus.rotation.x = Math.PI/2;
+  var box = new THREE.Mesh (new THREE.BoxGeometry (30, 40, 60), new THREE.MeshLambertMaterial({color: 'red'}));
+  box.position.set (-30, 20, -50);
+
+//  sceneGrey.add (floor, torus, box);
+    
+  sceneColor = new THREE.Scene();
+  var geometry = new THREE.TorusKnotGeometry( 10, 3, 100, 16 );
+  var material = new THREE.MeshLambertMaterial( { color: 'red' } );
+  var torusKnot = new THREE.Mesh( geometry, material );
+  //sceneColor.add(torusKnot);
+  torusKnot.position.y = 20;
+  readModel();
+  readModel2();
+  readModel3();
+  //readModel4();
+  //readModel5();
+  readModel6();
+  readModel7();
+  var table = Createtable();
+ sceneGrey.add(table);
+ 
+  var penholder=Createpenholder();
+ sceneGrey.add(penholder);
+  penholder.position.set(-80,48,20);
+  penholder.castShadow = true;
+  penholder.receiveShadow = true;
+  
+  var drink= Createdrink();
+ //sceneGrey.add(drink);
+  drink.castShadow = true;
+  drink.receiveShadow = true;
+ /* container = document.createElement('div');
+  document.body.appendChild(container);
+  renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  container.appendChild(renderer.domElement);
+  renderer.setClearColor (0xffffff);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 2000);
+  camera.position.z = 100;
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  scene = new THREE.Scene();
+  var ambient = new THREE.AmbientLight(0x444444);
+  scene.add(ambient);
+  
+  gridxz = new THREE.GridHelper (200, 20,'red','black');
+  //scene.add (gridxz);
+  let axis = new THREE.AxesHelper (20);
+ // scene.add (axis);
+ 
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  
+  var directionalLight = new THREE.DirectionalLight(0xffffff);
+  directionalLight.position.set(0, 0, 1).normalize();
+ // scene.add(directionalLight);
+ 
+  var pointLight = new THREE.PointLight (0xffffff,0.7);
+  pointLight.position.set (100,200,-100);
+  pointLight.castShadow = true;
+  scene.add (pointLight);
+  
+  var light = new THREE.PointLight(0xffffff, 0.5);
+  light.castShadow = true;
+  light.position.set(-85,70,40);
+  light.shadow.mapSize.width = 1024;
+  light.shadow.mapSize.height = 1024;
+  light.shadow.camera.near = 3;
+  light.shadow.camera.far = 130;
+  light.shadow.camera.fov = light.angle / Math.PI * 180 ;
+  scene.add(light);
+  
+  var sphereSize = 1;
+  var pointLightHelper = new THREE.PointLightHelper( light, sphereSize );
+ // scene.add( pointLightHelper )
+ */
+///////////////////////////////////////////////////////////////////  
+  var material_shh_normal = new THREE.ShaderMaterial({
+    vertexShader: document.getElementById('vsNormal').textContent,
+    fragmentShader: document.getElementById('fsNormal').textContent
+  });
+ window.addEventListener('resize', onWindowResize, false);
+
+  scene0 = new THREE.Scene();
+  teapotMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      lightpos: {
+        type: 'v3',
+        value: new THREE.Vector3(0, 30, 20)
+      }
+    },
+    vertexShader: document.getElementById('myVertexShader').textContent,
+    fragmentShader: document.getElementById('myFragmentShader').textContent
+  });
+
+ // Teapot = new THREE.Mesh (new THREE.TeapotBufferGeometry(5), teapotMaterial);
+ // Teapot.position.set(-50,47,50);
+  subject = new THREE.Mesh (new THREE.TeapotBufferGeometry(5),material_shh_normal);
+  subject.position.set(-50,47,50);
+  scene0.add (subject);
+  camera0 = new THREE.OrthographicCamera (-20,20,20,-20,-200,200);
+  ///////////////////////////////////////////////////////
+   renderTarget = new THREE.WebGLRenderTarget( 512,512);
+
+  var uniforms3 = {
+    imageSize: {
+    	type: 'i',
+      value: renderTarget.width
+    },
+    texture: {
+    	type: 't',
+      value: renderTarget.texture
+    }
+  };
+
+  material_shh = new THREE.ShaderMaterial({
+    uniforms: uniforms3,
+    vertexShader: document.getElementById('vsFilter').textContent,
+    fragmentShader: document.getElementById('fsFilter').textContent
+  });
+
+  // sceneRTT: contains a plane to draw the outline  
+  sceneRTT = new THREE.Scene();
+  cameraRTT = new THREE.OrthographicCamera(-50, 50, 50, -50, -10, 10);
+  var bs = new THREE.Mesh(new THREE.PlaneGeometry(100,100), material_shh);
+  sceneRTT.add(bs);
+  ///////////////////////////////////////////////////////////////////
+  // sceneRegular: contains the torusKnot with PhongMaterial
+  // and all lights to light up the torusKnot
+  sceneRegular = new THREE.Scene();
+   subjectClone = subject.clone();
+  subjectClone.material = new THREE.MeshPhongMaterial();
+  sceneRegular.add(subjectClone);
+  
+  var pointLight = new THREE.PointLight(0xffffff);
+  pointLight.position.set(0, 300, 200);
+  sceneRegular.add(pointLight);
+
+  var ambientLight = new THREE.AmbientLight(0x555555);
+  sceneRegular.add(ambientLight);
+
+///////////////////////////////////////////////////////////////////////////
+  renderTarget_whole = new THREE.WebGLRenderTarget(512,512);
+   
+   // scene is the final plane (to be mapped with the final subject)
+   scene = new THREE.Scene();
+   
+   cutoutShaderMat = new THREE.ShaderMaterial ({
+    uniforms: {
+       texture: {type:'t', value: renderTarget_whole.texture}
+    },
+    vertexShader: document.getElementById('vsCut').textContent,
+    fragmentShader: document.getElementById('fsCut').textContent
+   });
+   
+   planeXX = new THREE.Mesh (new THREE.PlaneGeometry (50,50), cutoutShaderMat);
+  // scene.add (planeXX);
+   planeXX.position.y = 25;
+ //  scene.add (new THREE.GridHelper (200,20,'red','white'));
+////////////////////////////////////////////////////////////////////////////
+  var geometry = new THREE.CircleGeometry( 5, 32 );
+  var material = new THREE.MeshBasicMaterial( { color: 0xD0B887, side: THREE.DoubleSide } );
+  var circle = new THREE.Mesh( geometry, material );
+  circle.position.set(-80,43,20);
+  circle.rotation.x=-Math.PI/2;
+  sceneGrey.add( circle );
+////////////////////////////////////////////////////////////////////////////
+    var drink2 = new THREE.Mesh(new THREE.PlaneGeometry(7, 5.2, 30, 30),
+    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
+	drink2.rotation.x =Math.PI / 3;
+	drink2.position.set(-81,54.3,3.65);
+	var drink3 = new THREE.Mesh(new THREE.PlaneGeometry(7, 5.2, 30, 30),
+    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
+	drink3.rotation.x =-Math.PI / 3;
+	drink3.position.set(-81,54.3,8.3);
+	var drink4 = new THREE.Mesh(new THREE.PlaneGeometry(7, 3, 30, 30),
+    new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('drink.jpeg'), side: THREE.DoubleSide}));
+	//drink4.rotation.x =-Math.PI / 3;
+	drink4.position.set(-81,55.2,5.975);
+    //sceneGrey.add(drink2,drink3,drink4);
+	var triangleGeometry = new THREE.Geometry(); 
+	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, 1.7, 0.95)); 
+	triangleGeometry.vertices.push(new THREE.Vector3(-5.5, -1, 0.95)); 
+	triangleGeometry.vertices.push(new THREE.Vector3( 3.5, -1, 0.95));
+	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, 1.5, 1.2)); 
+	triangleGeometry.vertices.push(new THREE.Vector3(-1.0, -1.5, 1.2)); 
+	triangleGeometry.vertices.push(new THREE.Vector3( 1.0, -1.5, 1.2));
+	triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+	triangleGeometry.faces.push(new THREE.Face3(3, 4, 5));
+	triangleGeometry.faces.push(new THREE.Face3(0, 2, 5));
+	triangleGeometry.faces.push(new THREE.Face3(0, 3, 5));
+	var triangleMaterial = new THREE.MeshBasicMaterial({ 
+	color:0x228B22, 
+	side:THREE.DoubleSide 
+	});
+
+	var triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial); 
+	triangleMesh.position.set(-85.47,54,5); 
+	triangleMesh.rotation.y=Math.PI/2;
+	var triangleMesh2 = new THREE.Mesh(triangleGeometry, triangleMaterial); 
+	triangleMesh2.position.set(-78.6,54,5); 
+	triangleMesh2.rotation.y=Math.PI/2;
+	//sceneGrey.add(triangleMesh,triangleMesh2); 
+/////////////////////////////////////////////////////////////////////////		
+  var floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 30, 30),
+  new THREE.MeshLambertMaterial({map:THREE.ImageUtils.loadTexture('floor.jpg')}));
+  floor.rotation.x = -Math.PI / 2;
+  sceneGrey.add(floor);
+  floor.receiveShadow = true;
+  
+    var wall = new THREE.Mesh(new THREE.PlaneGeometry(400,200), new THREE.MeshPhongMaterial({side:THREE.DoubleSide}));
+ sceneGrey.add(wall);
+ wall.position.set(200,100,0);
+ wall.rotation.y=Math.PI/2;
+  ///////////////////////////////////////////////////////////////////
+  var geometry = new THREE.BoxGeometry( 15, 2, 7 );
+  var material = new THREE.MeshBasicMaterial( {color: 0x000000} );
+  var remotecontrol = new THREE.Mesh( geometry, material );
+  sceneGrey.add( remotecontrol );
+  remotecontrol.position.set(-80,43,-50)
+  objects = new THREE.Group();
+  let cube = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}));
+  cube.name = 'cube'
+  cube.position.set (-77,44,-50)
+
+  let sphere = new THREE.Mesh (new THREE.SphereGeometry(2,20,20), new THREE.MeshBasicMaterial({color: 0xC0C0C0}))
+  sphere.name = 'sphere'
+  sphere.position.set (-83,44,-50)
+
+  objects.add (cube, sphere);
+  //sceneGrey.add (objects);
+  pickables = [ objects ];
+
+  raycaster = new THREE.Raycaster();
+  document.addEventListener('mousedown', onDocumentMouseDown, false);
+  document.addEventListener('mousemove', onDocumentMouseOver, false);
+  /////////////////////////////////////////////////////////////////////////
+function onWindowResize() {
+	  windowHalfX = window.innerWidth / 2;
+	  windowHalfY = window.innerHeight / 2;
+	  camera.aspect = window.innerWidth / window.innerHeight;
+	  camera.updateProjectionMatrix();
+	  renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+function onDocumentMouseDown(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // find intersections
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(pickables, true);
+  if (intersects.length > 0&&intersects[0].object.name=='cube') {
+   lightsOff = !lightsOff;
+   if (lightsOff) {
+    light.intensity = 0;
+   } else {
+    light.intensity = .5;
+   }   
+}
+  else if (intersects.length > 0&&intersects[0].object.name=='sphere') {
+   lightsbOff = !lightsbOff;
+   if (lightsbOff) {
+    pointLight.intensity = 0;
+   } else {
+    pointLight.intensity = .5;
+   }   
+}
+}
+function onDocumentMouseOver(event) {
+  event.preventDefault();  // may not be necessary
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // find intersections
+  raycaster.setFromCamera(mouse, camera);
+  var intersects = raycaster.intersectObjects(pickables, true);
+  if (intersects.length > 0) {
+    document.body.style.cursor = 'pointer';
+  } else {
+    document.body.style.cursor = 'auto';
+  }
+
+}
+  renderTarget = new THREE.WebGLRenderTarget (width, height);  // full-size RT
+  // it seems that
+  // one light can not be added to two DIFFERENT scenes ...
+  //
+  light = new THREE.PointLight( 0xffffff, 1);
+  light.position.set( 50, 50, 50 );
+  light2 = new THREE.PointLight( 0xffffff, 1);
+  
+  sceneColor.add (light);
+  sceneColor.add (new THREE.PointLightHelper (light,5))
+  sceneGrey.add (light2);
+//////////////////////////////////////////////////////////////////
+  var uniforms2 = {
+    texture: {
+      type: 't',
+      value: renderTarget.texture
+    } ,
+  };
+  camera0 = new THREE.OrthographicCamera (0, width, height, 0,-10,100);
+  
+  var vertShader2 = document.getElementById('myVertexShader-mono').textContent;
+  var fragShader2 = document.getElementById('myFragmentShader-mono').textContent;
+  shaderMaterial2 = new THREE.ShaderMaterial({
+    uniforms: uniforms2,
+    vertexShader: vertShader2,
+    fragmentShader: fragShader2,
+    
+    depthTest: false,  // no depth test
+    depthWrite: false  // do not write depth buffer
+  });
+  
+  // plane geometry filled the entire screen
+  var plane0 = new THREE.Mesh (new THREE.PlaneGeometry(width, height), shaderMaterial2);
+  scene0.add (plane0);
+  plane0.position.set (width/2, height/2, 0);
+ ////////////////////////////////////////////////////////////////////////
+   var uniforms = {
+    texture: {
+      type: 't',
+      value: null
+    } ,
+    which: {
+      type: 'i',
+      value: 0
+    }
+  };
+
+  var vertShader = document.getElementById('vs-texSwap').textContent;
+  var fragShader = document.getElementById('fs-texSwap').textContent;
+  var shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: vertShader,
+    fragmentShader: fragShader
+  });
+
+
+  ///////////////////////////////////////////////////////////
+
+
+   // to get texture image size:
+   // https://stackoverflow.com/questions/49111431/how-to-get-texture-dimensions-with-three-js
+  
+  let loader = new THREE.TextureLoader();
+  loader.crossOrigin = '';
+  let mickeys = 'm3.png';
+  let texture = loader.load(mickeys, function (tex) {
+    texture.wrapS = THREE.RepeatWrapping;
+  	console.log (tex.image.width + ', ' + tex.image.height);
+  	shaderMaterial.uniforms.texture.value= tex;
+  });  
+
+  let plane = new THREE.Mesh (new THREE.PlaneGeometry(120,120), shaderMaterial);
+  sceneGrey.add (plane);
+  plane.position.set(200,90,0);
+  plane.rotation.y=	-Math.PI/2;
+  function incWhich() {
+  	which += 1;
+  	shaderMaterial.uniforms.which.value = which;
+  	setTimeout (incWhich, 1000);
+  }
+  setTimeout (incWhich, 0);
+}
+
+
+
+
+function readModel (modelName, targetSize=60) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('WoodChair.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+
+    objLoader.load('WoodChair.obj', function(object) {
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(0,30,0);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/2, 0,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel2 ( targetSize=35) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Desk lamp.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Desk lamp.obj', function(object) {
+		let theObject =  unitize (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+	    theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-76,60,35);
+	    theObject.setRotationFromEuler (new THREE.Euler (0, 3.1416/4,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel3 (targetSize=15) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Fountain pen.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Fountain pen.obj', function(object) {
+		let theObject =  unitize3 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-80,50,21);
+	    theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, 3.1416/4,-3.1416/2, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel4 (targetSize=13) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Mug.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Mug.obj', function(object) {
+		let theObject =  unitize4 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+	    theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-59,47,-31);
+	    theObject.setRotationFromEuler (new THREE.Euler (0, 0,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel5 (targetSize=33) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Laptop.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Laptop.obj', function(object) {
+		let theObject =  unitize5 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-50,51,-1);
+	    theObject.setRotationFromEuler (new THREE.Euler (0, 3.1416,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel6 (targetSize=11) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('phone.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('phone.obj', function(object) {
+		let theObject =  unitize6 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-43,42.5,31);
+	    theObject.setRotationFromEuler (new THREE.Euler (3.1416/2, -3.1416/2,0, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function readModel7 (targetSize=15) {
+  var onProgress = function(xhr) {
+    if (xhr.lengthComputable) {
+      var percentComplete = xhr.loaded / xhr.total * 100;
+      console.log(Math.round(percentComplete, 2) + '% downloaded');
+    }
+  };
+  var onError = function(xhr) {};
+  var mtlLoader = new THREE.MTLLoader();
+  mtlLoader.setPath('models/');
+  mtlLoader.load('Pencil.mtl', function(materials) {
+    materials.preload();
+    var objLoader = new THREE.OBJLoader();
+    objLoader.setMaterials(materials);
+    objLoader.setPath('models/');
+    objLoader.load('Pencil.obj', function(object) {
+		let theObject =  unitize7 (object, targetSize);
+		//theObject.add ( new THREE.BoxHelper (theObject) )
+		theObject.name = 'OBJ'
+		sceneGrey.add (theObject);
+		theObject.children[0].children[0].castShadow = true;
+		theObject.children[0].children[0].receiveShadow = true;
+		theObject.position.set(-78,52,17);
+	    theObject.setRotationFromEuler (new THREE.Euler (-3.1416/4,-3.1416/4,3.1416/8, 'ZYX'))
+    }, onProgress, onError);
+  });
+}
+function unitize (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function unitize2 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;
+			
+}
+function unitize3 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	return theObject;		
+}
+function unitize4 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;
+			
+}
+function unitize5 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function unitize6 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function unitize7 (object, targetSize) {  
+	var box3 = new THREE.Box3();
+	box3.setFromObject (object);
+	var size = new THREE.Vector3();
+	size.subVectors (box3.max, box3.min);
+	var center = new THREE.Vector3();
+	center.addVectors(box3.max, box3.min).multiplyScalar (0.5);
+	console.log ('center: ' + center.x + ', '+center.y + ', '+center.z );
+	console.log ('size: ' + size.x + ', ' +  size.y + ', '+size.z );
+	
+	// uniform scaling according to objSize
+	var objSize = Math.max (size.x, size.y, size.z);
+	var scaleSet = targetSize/objSize;
+				
+	var theObject =  new THREE.Object3D();
+	theObject.add (object);
+	object.scale.set (scaleSet, scaleSet, scaleSet);
+	object.position.set (-center.x*scaleSet, -center.y*scaleSet, -center.z*scaleSet);
+	
+	return theObject;		
+}
+function animate() {
+  angle += 0.01;
+  requestAnimationFrame(animate);
+  light.position.set (40*Math.cos(angle), 60, 40*Math.sin(angle));
+  light2.copy (light);
+  
+  // render sceneGrey to renderTarget
+  renderer.setRenderTarget (renderTarget);
+  renderer.clear();  // clear the buffers of render target 
+
+  // normalMat.colorWrite = true;
+  sceneGrey.traverse ( function (obj) {
+  	if (obj instanceof THREE.Mesh)
+  		obj.material.colorWrite = true;
+  });
+  
+  renderer.render(sceneGrey, camera);
+
+  // switch to screen output    
+  renderer.setRenderTarget (null);
+  renderer.clearColor();  // clear screen buffers
+  renderer.render(scene0, camera0);
+  
+  // set up blockers from sceneGrey (colorWrite is disabled)
+  // normalMat.colorWrite = false;
+  sceneGrey.traverse ( function (obj) {
+  	if (obj instanceof THREE.Mesh)
+  		obj.material.colorWrite = false;
+  });
+
+ 
+  // render sceneColor
+  renderer.render(sceneColor, camera);
+    renderer.render(scene, camera);
+}
+</script>
+</body>
+
+</html>
